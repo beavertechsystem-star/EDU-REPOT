@@ -141,7 +141,7 @@
           const timer = setTimeout(() => {
             setFlash(false);
             setDiffText(null);
-          }, 2000); 
+          }, 8000);  // 動畫停留 8 秒
           return () => clearTimeout(timer);
         }
       }, [value, prevVal]);
@@ -157,7 +157,7 @@
           <span className="text-xs md:text-sm ml-1 md:ml-2 hidden sm:inline uppercase">{label}</span>
 
           {diffText && (
-            <span className={`absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 text-xl md:text-2xl font-black ${diffText.startsWith('+') ? 'text-[#237841]' : 'text-[#e3000b]'} stroke-black style-stroke animate-bounce z-50`}>
+            <span className={`absolute -bottom-8 md:-bottom-10 left-1/2 -translate-x-1/2 text-xl md:text-2xl font-black ${diffText.startsWith('+') ? 'text-[#237841]' : 'text-[#e3000b]'} stroke-black style-stroke animate-bounce z-50`}>
               {diffText}
             </span>
           )}
@@ -191,7 +191,7 @@
           const timer = setTimeout(() => {
             setFlash(false);
             setDiffText(null);
-          }, 2000);
+          }, 8000); // 動畫停留 8 秒
           return () => clearTimeout(timer);
         }
       }, [val, prevVal]);
@@ -203,7 +203,7 @@
             <span className="relative">
               {val}%
               {diffText && (
-                <span className={`absolute -top-6 right-0 text-lg font-black ${diffText.startsWith('+') ? 'text-[#237841]' : 'text-[#e3000b]'} stroke-black style-stroke animate-bounce z-20`}>
+                <span className={`absolute -top-8 right-0 text-lg font-black ${diffText.startsWith('+') ? 'text-[#237841]' : 'text-[#e3000b]'} stroke-black style-stroke animate-bounce z-20`}>
                   {diffText}
                 </span>
               )}
@@ -232,21 +232,22 @@
           const timer = setTimeout(() => {
             setFlash(false);
             setDiffText(null);
-          }, 2000);
+          }, 8000); // 動畫停留 8 秒
           return () => clearTimeout(timer);
         }
       }, [val, prevVal]);
 
       return (
         <div className={`flex items-center w-full transition-all duration-300 ${flash ? 'scale-[1.05] bg-black/30 rounded px-1 z-10' : 'px-1'}`}>
-          <span className="w-[50px] sm:w-[65px] text-[10px] font-black text-white uppercase tracking-tighter drop-shadow-[1px_1px_0_#000] truncate leading-none">{label}</span>
+          {/* 修正：加寬度 w-[65px] 並允許換行處理，保證英文不被截斷 */}
+          <span className="w-[65px] sm:w-[75px] text-[10px] font-black text-white uppercase tracking-tighter drop-shadow-[1px_1px_0_#000] leading-none whitespace-nowrap">{label}</span>
           <div className="flex-1 bg-black/50 border-2 border-black h-2.5 sm:h-3.5 rounded-sm relative overflow-hidden mx-1 shadow-inner">
             <div className={`h-full ${color} transition-all duration-1000 border-r-2 border-black`} style={{ width: `${val}%` }}></div>
           </div>
           <span className="w-6 text-right text-[10px] font-black text-white drop-shadow-[1px_1px_0_#000] relative leading-none">
             {val}%
             {diffText && (
-              <span className={`absolute -top-3.5 right-0 text-xs font-black ${diffText.startsWith('+') ? 'text-[#4ade80]' : 'text-[#ffcf00]'} drop-shadow-[1px_1px_0_#000] animate-bounce z-20`}>
+              <span className={`absolute -top-5 right-0 text-xs font-black ${diffText.startsWith('+') ? 'text-[#4ade80]' : 'text-[#ffcf00]'} drop-shadow-[1px_1px_0_#000] animate-bounce z-20`}>
                 {diffText}
               </span>
             )}
@@ -265,10 +266,22 @@
       const [lastResult, setLastResult] = useState(null);
       const [emojiTick, setEmojiTick] = useState(0);
 
+      // 控制學生表情輪替的計時器
       useEffect(() => {
         const timer = setInterval(() => setEmojiTick(t => t + 1), 800);
         return () => clearInterval(timer);
       }, []);
+
+      // 決策結果 8 秒自動關閉功能
+      useEffect(() => {
+        let timer;
+        if (gameState === 'result') {
+          timer = setTimeout(() => {
+            closeResult();
+          }, 8000); // 8秒後自動關閉結果視窗
+        }
+        return () => clearTimeout(timer);
+      }, [gameState, lastResult]);
 
       const handleStart = () => setGameState('playing');
 
@@ -346,9 +359,8 @@
                   進入教室 START
                 </LegoButton>
                 
-                {/* 版本號移到這裡：按鈕正下方 */}
                 <div className="mt-4 md:mt-6 text-sm font-black text-gray-400 tracking-wider">
-                  v1.1.2
+                  v1.1.3
                 </div>
               </div>
             </div>
@@ -518,7 +530,7 @@
                   })}
                 </div>
                 <LegoButton colorClass="bg-[#ffcf00] text-black text-base md:text-xl w-full" onClick={closeResult}>
-                  繼續巡視教室
+                  繼續巡視 (8秒自動關閉)
                 </LegoButton>
               </div>
             </div>

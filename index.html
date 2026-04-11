@@ -49,10 +49,7 @@
 
     const ISSUES = {
       thermal: {
-        id: 'thermal',
-        emoji: '🥶',
-        emojis: ['🥶', '🤧', '🧊'], 
-        name: '熱舒適度',
+        id: 'thermal', emoji: '🥶', emojis: ['🥶', '🤧', '🧊'], name: '熱舒適度',
         studentQuote: '「校長，我們快冷死了！有 69% 的同學覺得教室像冰箱！」',
         paperFact: '📝 論文數據：冬季缺乏暖氣與保溫層，55% 的學生必須穿厚重外套上課。',
         options: [
@@ -61,10 +58,7 @@
         ]
       },
       iaq: {
-        id: 'iaq',
-        emoji: '😴',
-        emojis: ['😴', '🥱', '😵‍💫'],
-        name: '空氣品質',
+        id: 'iaq', emoji: '😴', emojis: ['😴', '🥱', '😵‍💫'], name: '空氣品質',
         studentQuote: '「Zzz... 教室好悶，有 69% 的人都覺得好想睡覺...」',
         paperFact: '📝 論文數據：缺乏獨立通風系統，教室內 CO2 濃度過高，且常有異味。',
         options: [
@@ -73,10 +67,7 @@
         ]
       },
       acoustic: {
-        id: 'acoustic',
-        emoji: '🙉',
-        emojis: ['🙉', '😖', '💢'],
-        name: '聲學舒適度',
+        id: 'acoustic', emoji: '🙉', emojis: ['🙉', '😖', '💢'], name: '聲學舒適度',
         studentQuote: '「外面車子好吵，同學講話也有回音，41%的人覺得很煩躁！」',
         paperFact: '📝 論文數據：內部缺乏吸音材質，外部則有交通噪音干擾。',
         options: [
@@ -85,10 +76,7 @@
         ]
       },
       ergonomic: {
-        id: 'ergonomic',
-        emoji: '🪑',
-        emojis: ['🪑', '🩹', '😫'],
-        name: '傢俱與人體工學',
+        id: 'ergonomic', emoji: '🪑', emojis: ['🪑', '🩹', '😫'], name: '傢俱與人體工學',
         studentQuote: '「這木頭椅子好硬又太高，坐一整天背超級痛的啦！」',
         paperFact: '📝 論文數據：受限於預算，學校難以汰換老舊的木製傢俱，超過 30% 學生因為不符合人體工學而感到身體不適。',
         options: [
@@ -97,10 +85,7 @@
         ]
       },
       lighting: {
-        id: 'lighting',
-        emoji: '💡',
-        emojis: ['💡', '👀', '✨'],
-        name: '照明舒適度',
+        id: 'lighting', emoji: '💡', emojis: ['💡', '👀', '✨'], name: '照明舒適度',
         studentQuote: '「教室的燈光很亮很舒服，86% 的人都很滿意喔！」',
         paperFact: '📝 論文數據：照明是巴勒斯坦學校表現最好的一環，歸功於 LED 燈的普及與良好的自然採光。',
         options: [
@@ -250,7 +235,6 @@
           alert("校長，我們的預算積木用完了！請選擇別的方案！");
           return;
         }
-
         setLastResult({ text: option.resultText, impact: option.impact, cost: option.cost, eventId: activeEvent.id });
         setGameState('result');
       };

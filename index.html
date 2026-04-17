@@ -70,7 +70,7 @@
     .stat-bar-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.5s ease; }
     .fill-optA { background: var(--optA); } .fill-optB { background: var(--optB); } .fill-optC { background: var(--optC); }
 
-    /* 🛡️ 終極隔離 CSS：控制項預設完全隱藏，只有在 Host 啟用時才出現 */
+    /* 🛡️ 終極隔離：控制按鈕預設隱藏，只在 HostScreen 激活時出現 */
     .host-controls { display: none; }
     #hostScreen.active .host-controls { display: flex; align-items: center; }
 
@@ -96,7 +96,7 @@
 </head>
 <body>
 
-  <!-- 1. 首頁：只有兩個大按鈕，絕對不會出現控制鍵 -->
+  <!-- 1. 首頁：絕對沒有控制按鈕 -->
   <div id="roleScreen" class="screen active">
     <div class="glass-panel" style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
       <div id="connBadge" class="btn-primary" style="font-size: 12px; padding: 4px 12px; margin-bottom: 20px; display: inline-block; border-radius: 20px;">Firebase 狀態載入中...</div>
@@ -107,7 +107,7 @@
     </div>
   </div>
 
-  <!-- 2. 顧問端：保證乾淨，只有題目與投票 -->
+  <!-- 2. 觀眾手機畫面：完全沒有控制按鈕 -->
   <div id="voterScreen" class="screen">
     <div id="voterCaseContent">
       <h2 id="voterTitle" style="color: #fff; margin-bottom: 10px;">載入中...</h2>
@@ -133,12 +133,12 @@
     </div>
   </div>
 
-  <!-- 3. 主控台：只有進入這裡，控制按鈕才會從隱形變成可見 -->
+  <!-- 3. 大螢幕投影畫面 (主控台)：獨家包含控制按鈕與完整題目 -->
   <div id="hostScreen" class="screen">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
       <h2 style="color: var(--cyan); letter-spacing: 2px;">CAIAF_SPECTRUM <span id="hostStatusBadge" style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">同步中</span></h2>
       
-      <!-- 講者專屬：重置、上一題、下一題 (僅在此畫面出現) -->
+      <!-- 只有這裡會顯示控制按鈕 -->
       <div class="host-controls">
         <button id="clearBtn" style="background:rgba(255,50,50,0.15); color:#ff6b6b; padding:10px 16px; margin-right:15px; border: 1px solid rgba(255,50,50,0.4); border-radius: 8px; cursor: pointer;" onclick="clearVotes()">[重置現場顧問群決策分布]</button>
         <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px; border: none; border-radius: 8px; cursor: pointer;" onclick="prevCase()">[< 上一題]</button>
@@ -147,12 +147,13 @@
     </div>
     
     <div style="display: flex; justify-content: center; width: 100%;">
-      <!-- 大螢幕核心格子：顯示題目、情境、投票數據 -->
       <div class="glass-panel" style="width: 100%; max-width: 900px; display: flex; flex-direction: column; text-align: center;">
+          <!-- 題目資訊顯示 -->
           <div id="hostCaseMeta" style="color: var(--cyan); font-family: monospace; letter-spacing: 1px; margin-bottom: 10px;"></div>
           <h1 id="hostTitle" style="font-size: 28px; margin-bottom: 16px;"></h1>
           <p id="hostDesc" style="font-size: 18px; line-height: 1.8; color: var(--sub); margin-bottom: 30px; text-align: left; padding: 0 40px;"></p>
           
+          <!-- 決策分佈顯示 -->
           <h3 style="text-align:center; color: var(--cyan); font-family: monospace; letter-spacing: 2px; margin-bottom: 30px; border-top: 1px solid rgba(0,240,255,0.2); padding-top: 30px;">📡 現場顧問群決策分佈</h3>
           <div id="hostStatsArea" style="flex: 1; text-align: left;"></div>
           
@@ -182,7 +183,7 @@
   </div>
 
   <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.2.1
+    Designed by 日安匕禾 Bever Tech System | Version: v3.2.2
   </footer>
 
   <script type="module">
@@ -296,8 +297,9 @@
       if (user) {
         userId = user.uid;
         document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中";
+        
+        // 核心修正：移除這裡的 setDoc 指令，講者沒按按鈕之前，什麼都不會發生！
         if(currentRole === 'host') {
-          setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
           listenVotes();
         }
         if(currentRole === 'voter') listenState();
@@ -311,6 +313,7 @@
         document.getElementById('hostScreen').classList.add('active');
         updateHostUI();
         if (userId) {
+          // 只有此時講者親自啟動主控台，才會發送訊號
           setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
           listenVotes();
         }
@@ -390,6 +393,7 @@
       await Promise.all(deletePromises);
     };
 
+    // 🌟 鍵盤捷徑 (含 S 鍵切換待機)
     document.addEventListener('keydown', (e) => {
       if (currentRole === 'host') {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') nextCase();
@@ -403,6 +407,11 @@
       }
     });
 
+    // 🌟 當講者關閉網頁或離開主控台，自動設為待機模式
+    window.addEventListener('beforeunload', () => {
+      if(currentRole === 'host') setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
+    });
+
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
         if(ds.exists()){
@@ -411,12 +420,17 @@
           if(data.status === 'voting') loadVoterCase();
           else if(data.status === 'verdict') showVoterVerdict();
           else {
+            // 待機畫面邏輯
             document.getElementById('voterTitle').innerText = "⏳ 講者準備中...";
             document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
             document.getElementById('voterOptions').innerHTML = "";
             document.getElementById('voterCaseContent').style.display = 'block';
             document.getElementById('voterVerdictArea').style.display = 'none';
           }
+        } else {
+            // 初始無資料狀態
+            document.getElementById('voterTitle').innerText = "⏳ 講者準備中...";
+            document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
         }
       });
     }

@@ -187,7 +187,7 @@
   </div>
 
   <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.1.4
+    Designed by 日安匕禾 Bever Tech System | Version: v3.1.5
   </footer>
 
   <script type="module">
@@ -452,6 +452,10 @@
           <span style="font-family: monospace; font-weight: 900; margin-right: 10px;">[${opt.label}]</span>${opt.text}
         </button>
       `).join('');
+      
+      // 🌟 修復關鍵：切換題目時，強制將選項區塊重新顯示出來！
+      document.getElementById('voterOptions').style.display = 'block';
+      
       document.getElementById('voterCaseContent').style.display = 'block';
       document.getElementById('voterVerdictArea').style.display = 'none';
       document.getElementById('waitMessage').style.display = 'none';

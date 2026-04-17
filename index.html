@@ -60,7 +60,7 @@
     #voterScreen { padding: 16px; max-width: 600px; margin: 0 auto; }
     .mobile-vote-btn {
       width: 100%; padding: 20px; margin-bottom: 14px; text-align: left;
-      background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1); color: #fff;
+      background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1); color: #fff; line-height: 1.5; font-size: 16px;
     }
     .mobile-vote-btn.selected { border-color: var(--cyan); box-shadow: var(--glow-A); }
 
@@ -70,6 +70,10 @@
     .stat-bar-bg { width: 100%; height: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-top: 8px; }
     .stat-bar-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.5s ease; }
     .fill-optA { background: var(--optA); } .fill-optB { background: var(--optB); } .fill-optC { background: var(--optC); }
+    
+    .quotes { display: grid; gap: 16px; margin-top: 20px; }
+    .quote { padding: 18px; background: rgba(0, 240, 255, 0.03); border-radius: 12px; border-left: 3px solid var(--cyan); font-size: 16px; line-height: 1.7; }
+    .quote b { color: var(--cyan); display: inline-block; margin-bottom: 6px; font-size: 14px; letter-spacing: 1px; font-family: monospace; background: rgba(0,240,255,0.1); padding: 2px 8px; border-radius: 4px; }
 
     /* Overlay */
     .analyzing-overlay {
@@ -81,8 +85,8 @@
     .scanner-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--cyan); animation: scan 1.2s infinite alternate; }
     @keyframes scan { from { top: 0; } to { top: 100%; } }
 
-    .verdict-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 101; }
-    .verdict-card { background: var(--bg-panel); border: 1px solid var(--cyan); padding: 40px; max-width: 800px; width: 90%; border-radius: 20px; }
+    .verdict-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 101; padding: 20px;}
+    .verdict-card { background: var(--bg-panel); border: 1px solid var(--cyan); padding: 40px; max-width: 900px; width: 100%; border-radius: 20px; max-height: 90vh; overflow-y: auto;}
 
     /* Footer 樣式 */
     .app-footer {
@@ -95,10 +99,10 @@
 <body>
 
   <div id="roleScreen" class="screen active">
-    <div class="glass-panel" style="max-width: 500px;">
+    <div class="glass-panel" style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
       <div id="connBadge" class="btn-primary" style="font-size: 12px; padding: 4px 12px; margin-bottom: 20px; display: inline-block; border-radius: 20px;">Firebase 狀態載入中...</div>
       <h1>CAIAF 光譜實驗室</h1>
-      <p style="color: var(--sub); margin-bottom: 30px;">請選擇連線身分</p>
+      <p style="color: var(--sub); margin-bottom: 30px; line-height: 1.6;">請選擇您的終端設備，開啟對應的介面模式。</p>
       <button class="role-btn" onclick="initApp('host')">💻 啟動全息主控台</button>
       <button class="role-btn" onclick="initApp('voter')">📱 連線現場顧問群</button>
     </div>
@@ -106,62 +110,75 @@
 
   <div id="voterScreen" class="screen">
     <div id="voterCaseContent">
-      <h2 id="voterTitle">載入中...</h2>
-      <p id="voterDesc" style="color: var(--sub);"></p>
+      <h2 id="voterTitle" style="color: #fff; margin-bottom: 10px;">載入中...</h2>
+      <p id="voterDesc" style="color: var(--sub); line-height: 1.6; font-size: 16px; margin-bottom: 20px;"></p>
       <div id="voterOptions"></div>
-      <div id="waitMessage" style="display:none; text-align:center; padding: 40px;">
-        <h3 style="color: var(--cyan);">📡 數據已傳輸</h3>
-        <p>請抬頭觀看大螢幕解鎖分析結果</p>
+      <div id="waitMessage" style="display:none; text-align:center; padding: 40px; background: rgba(0, 240, 255, 0.05); border: 1px dashed rgba(0, 240, 255, 0.3); border-radius: 16px; margin-top: 20px;">
+        <h3 style="color: var(--cyan); margin-bottom: 10px;">📡 數據已傳輸</h3>
+        <p style="color: var(--sub);">資料分析中...<br>請抬頭觀看主控台大螢幕解鎖結果。</p>
       </div>
     </div>
-    <div id="voterVerdictArea" style="display:none;">
-      <h2 id="voterVerdictResult" style="color: #fff;"></h2>
-      <div id="voterVerdictLevel" style="color: var(--cyan); margin-bottom: 20px;"></div>
-      <div class="glass-panel">
-        <h4>⚠️ 核心反思</h4>
-        <ul id="voterRisks"></ul>
+    <div id="voterVerdictArea" style="display:none; text-align: center;">
+      <div style="width: 70px; height: 70px; margin: 0 auto 16px; border-radius: 50%; border: 2px solid var(--cyan); display: grid; place-items: center; color: var(--cyan); font-size: 28px; background: radial-gradient(circle at 30% 30%, rgba(0, 240, 255, 0.2), transparent); box-shadow: var(--glow-A);">✓</div>
+      <h2 id="voterVerdictResult" style="color: #fff; margin-bottom: 10px;"></h2>
+      <div id="voterVerdictLevel" style="color: var(--cyan); margin-bottom: 30px; display: inline-block; background: rgba(0,240,255,0.1); padding: 6px 16px; border-radius: 8px;"></div>
+      <div class="glass-panel" style="text-align: left; margin-bottom: 20px;">
+        <h4 style="color: var(--cyan); margin-top: 0;">⚠️ 核心反思與風險</h4>
+        <ul id="voterRisks" style="color: var(--sub); line-height: 1.6; padding-left: 20px;"></ul>
+      </div>
+      <div class="glass-panel" style="text-align: left;">
+        <h4 style="color: var(--cyan); margin-top: 0;">💡 CAIAF 教師建議</h4>
+        <ul id="voterTeacher" style="color: var(--sub); line-height: 1.6; padding-left: 20px;"></ul>
       </div>
     </div>
   </div>
 
   <div id="hostScreen" class="screen">
-    <div style="display:flex; justify-content: space-between; margin-bottom: 20px;">
-      <h2 style="color: var(--cyan);">CAIAF_LAB // 數據監控中</h2>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h2 style="color: var(--cyan); letter-spacing: 2px;">CAIAF_SPECTRUM <span style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">系統連線：穩定</span></h2>
       <div>
-        <button onclick="prevCase()">[上一個]</button>
-        <button onclick="nextCase()">[下一個]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px;" onclick="prevCase()">[< 上一題]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px;" onclick="nextCase()">[下一題 >]</button>
       </div>
     </div>
     <div class="host-grid">
-      <div class="glass-panel">
-        <h1 id="hostTitle"></h1>
-        <p id="hostDesc"></p>
-        <div id="hostQuotes"></div>
+      <div class="glass-panel" style="overflow-y: auto; max-height: calc(100vh - 200px);">
+        <div id="hostCaseMeta" style="color: var(--cyan); font-family: monospace; letter-spacing: 1px; margin-bottom: 10px;"></div>
+        <h1 id="hostTitle" style="font-size: 32px; margin-bottom: 16px;"></h1>
+        <p id="hostDesc" style="font-size: 18px; line-height: 1.8; color: var(--sub);"></p>
+        <div id="hostQuotes" class="quotes"></div>
       </div>
-      <div class="glass-panel">
-        <h3 style="text-align:center;">即時決策分佈</h3>
-        <div id="hostStatsArea"></div>
-        <button class="btn-primary" style="width:100%; margin-top: 40px;" onclick="announceVerdict()">⚡ 啟動 CAIAF 框架分析</button>
+      <div class="glass-panel" style="display: flex; flex-direction: column;">
+        <h3 style="text-align:center; color: var(--cyan); font-family: monospace; letter-spacing: 2px; margin-bottom: 40px;">📡 現場顧問群決策分佈</h3>
+        <div id="hostStatsArea" style="flex: 1;"></div>
+        <button class="btn-primary" style="width:100%; margin-top: 20px; font-size: 20px; padding: 20px;" onclick="announceVerdict()">⚡ 啟動 CAIAF 框架分析</button>
       </div>
     </div>
   </div>
 
   <div class="analyzing-overlay" id="analyzingOverlay"><div class="scanner-line"></div>ANALYZING...</div>
   <div class="verdict-overlay" id="verdictOverlay">
-    <div class="verdict-card">
-      <h1 id="modalVerdictResult"></h1>
-      <h3 id="modalVerdictLevel" style="color: var(--cyan);"></h3>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;">
-        <div><h4>⚠️ 核心反思</h4><ul id="modalRisks"></ul></div>
-        <div><h4>💡 教師建議</h4><ul id="modalTeacher"></ul></div>
+    <div class="verdict-card" style="text-align: center;">
+      <h2 style="color: var(--sub); font-family: monospace; letter-spacing: 2px; font-size: 18px; margin-bottom: 16px;">>> CAIAF FRAMEWORK ANALYSIS RESULT</h2>
+      <h1 id="modalVerdictResult" style="font-size: 38px; color: #fff; margin-bottom: 16px;"></h1>
+      <h3 id="modalVerdictLevel" style="color: var(--cyan); display: inline-block; background: rgba(0,240,255,0.1); padding: 8px 20px; border-radius: 8px; margin-bottom: 30px;"></h3>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; margin-bottom: 30px;">
+        <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+          <h4 style="color: var(--cyan); margin-top: 0; font-size: 18px;">⚠️ 核心反思與風險</h4>
+          <ul id="modalRisks" style="color: var(--sub); line-height: 1.8; padding-left: 20px; font-size: 16px;"></ul>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+          <h4 style="color: var(--cyan); margin-top: 0; font-size: 18px;">💡 CAIAF 教師建議</h4>
+          <ul id="modalTeacher" style="color: var(--sub); line-height: 1.8; padding-left: 20px; font-size: 16px;"></ul>
+        </div>
       </div>
-      <button class="btn-primary" style="margin-top: 20px;" onclick="closeVerdict()">關閉分析</button>
+      <button class="btn-primary" style="padding: 16px 40px;" onclick="closeVerdict()">關閉並準備下一題</button>
     </div>
   </div>
 
-  <!-- 專屬版權與版本號宣告 -->
   <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.0.2
+    Designed by 日安匕禾 Bever Tech System | Version: v3.0.4
   </footer>
 
   <script type="module">
@@ -180,49 +197,152 @@
       measurementId: "G-MZHCG905XL"
     };
 
+    // 🏆 原汁原味 6 大觀測樣本 (完全還原)
     const cases = [
       {
-        title: "樣本 01：信任危機",
-        desc: "偵測軟體顯示 80% AI 生成，但學生堅持只用了 Grammarly 潤飾。如果是你，會判定作弊嗎？",
-        quotes: [["學生", "我只修了文法，為什麼判定我作弊？"], ["系統", "偵測工具準確率有時僅 22%，且對非母語人士有偏見。"]],
-        options: [{id:"optA", label:"A", text:"相信軟體直接給零分"}, {id:"optB", label:"B", text:"退回要求課堂重寫"}, {id:"optC", label:"C", text:"改用口頭答辯確認思路"}],
-        verdict: "應放棄單一依賴 AI 偵測工具", level: "核心：評量轉型",
-        risks: ["偵測軟體存在高度偽陽性", "對非母語學生極不公平"], teacher: ["轉向過程導向評量", "建立互信的 AI 使用規範"]
+        title: "觀測樣本 01：抓弊無效 (打破舊有迷思)",
+        desc: "一位認定的國際學生提交了出色的期末報告。但老師用「AI 偵測軟體」一掃，顯示「80% 為 AI 生成」。學生崩潰哭訴自己只用了 Grammarly 檢查文法，絕對沒用 ChatGPT 代寫。",
+        quotes: [
+          ["學生終端", "我真的只有檢查文法，為什麼軟體說我作弊？這不公平！"],
+          ["教師日誌", "偵測軟體都顯示 80% 了，身為老師我能不相信系統嗎？"],
+          ["CAIAF 提示", "請考量關於 AI 偵測軟體的技術限制與偽陽性問題。"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "相信偵測軟體，直接給零分 (傳統防堵派)" },
+          { id: "optB", label: "B", text: "退回報告，要求課堂上手寫重作 (勞民傷財)" },
+          { id: "optC", label: "C", text: "放棄依賴軟體，請學生口頭答辯 (CAIAF 導向)" }
+        ],
+        verdict: "應放棄過度依賴 AI 偵測軟體",
+        level: "核心概念：評量設計的典範轉移",
+        risks: [
+          "論文指出 AI 偵測工具準確率極低（有時僅 22%），這並非可靠的判定依據。",
+          "這些工具對「非母語人士」有嚴重的偏見與偽陽性風險，會造成教育不公。",
+          "富裕學生可購買更高級的 AI 來規避偵測，加劇了階級落差。"
+        ],
+        teacher: [
+          "停止依賴黑箱演算法來判定學生的誠信與努力。",
+          "評量應轉向「過程導向」，例如要求學生繳交草稿、口頭答辯寫作思路。"
+        ]
       },
       {
-        title: "樣本 02：時空錯位",
-        desc: "學生用 AI 總結文獻並根據大綱寫作業。這行為在哪個階段最該被禁止？",
-        options: [{id:"optA", label:"A", text:"國小三年級"}, {id:"optB", label:"B", text:"大學一年級"}, {id:"optC", label:"C", text:"研究所博士班"}],
-        verdict: "判定取決於教學目標對準性", level: "核心：教育階段分流",
-        risks: ["國小生使用會剝奪歸納能力訓練", "高教階段則是高效協作"], teacher: ["區分 K-12 與高等教育標準"]
+        title: "觀測樣本 02：外包的腦袋 (學習本質的流失)",
+        desc: "學生利用 AI 寫出了一份結構完美的報告。但當老師在課堂上請他「用自己的話總結報告觀點」時，學生卻支支吾吾，完全說不出所以然。",
+        quotes: [
+          ["學生終端", "報告裡的字我都看得懂，只是突然叫我講，我講不出來嘛..."],
+          ["教師日誌", "他沒有『抄襲』別人的文章，但這份報告裡的知識，真的屬於他嗎？"],
+          ["CAIAF 提示", "當學生的「產出成果」與「真實認知」嚴重脫節時，我們評量到了什麼？"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "只要報告結構完美、符合規定就給高分" },
+          { id: "optB", label: "B", text: "直接視為作弊，因為他沒有真正理解內容" },
+          { id: "optC", label: "C", text: "調整評量，將「思路反思與答辯」納入計分" }
+        ],
+        verdict: "評量應回歸「教學對準 (Pedagogical Alignment)」",
+        level: "核心概念：防範認知外包 (Cognitive Offloading)",
+        risks: [
+          "過度依賴 AI 會導致「認知外包」，學生看似完成作業，實則失去了深度思考與知識內化的機會。",
+          "僅憑最終書面產出，教師將越來越難以判斷學生真實的學習狀況。"
+        ],
+        teacher: [
+          "評量設計應從「單一最終產出 (Product)」轉向「過程導向 (Process)」。",
+          "增加形成性評量，例如要求學生提交與 AI 的提詞對話紀錄 (Prompt Log)，並對 AI 的產出進行批判性反思。"
+        ]
       },
       {
-        title: "樣本 03：看不見的危險",
-        desc: "老師將全班真實姓名與輔導紀錄貼上 ChatGPT 請它寫評語。這違反了什麼？",
-        options: [{id:"optA", label:"A", text:"透明性"}, {id:"optB", label:"B", text:"責任歸屬"}, {id:"optC", label:"C", text:"隱私與資料保護"}],
-        verdict: "嚴重違反隱私與資料保護", level: "核心：教師道德底線",
-        risks: ["學生個資外洩成為訓練數據"], teacher: ["使用前必須去識別化", "嚴禁上傳敏感個資"]
+        title: "觀測樣本 03：隱私危機 (提醒教師自身的道德盲點)",
+        desc: "某高中老師為了節省期末處理文書的時間，將全班 40 位學生的「真實姓名、歷年成績與輔導紀錄」全部貼到免費版的 ChatGPT，請 AI 快速生成每個學生的期末評語。",
+        quotes: [
+          ["教師日誌", "這樣寫評語超快！而且語氣溫和，每一篇看起來都很專業。"],
+          ["家長回饋", "等等...我小孩的敏感輔導紀錄被傳給外面的 AI 科技公司了嗎？"],
+          ["CAIAF 提示", "AI 評量框架不僅僅約束學生作弊，同時也約束教育者的行為。"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "嚴重違反「透明性 (Transparency)」" },
+          { id: "optB", label: "B", text: "嚴重違反「責任歸屬 (Accountability)」" },
+          { id: "optC", label: "C", text: "嚴重違反「隱私與資料保護 (Privacy)」" }
+        ],
+        verdict: "嚴重違反「隱私與資料保護」",
+        level: "核心概念：教育者的 AI 倫理底線",
+        risks: [
+          "將學生可識別個資與敏感紀錄上傳至公共 AI 平台，資料會被用於訓練模型，造成嚴重外洩。",
+          "教育現場往往過度關注學生的「作弊」，卻忽略了教師使用 AI 時的倫理盲區。"
+        ],
+        teacher: [
+          "論文點出五大道德原則，『隱私保護』是不可逾越的紅線。",
+          "教師若需使用 AI，必須先對資料進行「去識別化 (De-identification)」，或使用校方核准的封閉環境。"
+        ]
       },
       {
-        title: "樣本 04：未來的模樣",
-        desc: "學生戴智慧眼鏡寫程式，AI 即時語音導航 debug。這屬於哪個等級？",
-        options: [{id:"optA", label:"A", text:"Level 4"}, {id:"optB", label:"B", text:"Level 5"}, {id:"optC", label:"C", text:"Level 6 (即時互動助理)"}],
-        verdict: "Level 6: 進階 AI 整合", level: "核心：框架未來擴展性",
-        risks: ["傳統評分已無意義"], teacher: ["著重於學生對 AI 建議的批判能力"]
+        title: "觀測樣本 04：未來邊界 (展示框架 Level 6 的未來擴展性)",
+        desc: "學生戴著智慧眼鏡寫程式作業，AI 系統透過視覺與語音不斷即時提示：「你這裡少了一個分號」、「這個演算法效能太差，試試看這個寫法」。學生隨時與 AI 對話並完成作業。",
+        quotes: [
+          ["學生終端", "這系統就像我的私人專屬助教，24 小時隨時陪我 debug！"],
+          ["教師日誌", "這到底算是他寫的，還是 AI 寫的？這已經超越單純的『輔助』了。"],
+          ["CAIAF 提示", "科技正朝向即時、個人化的互動發展，這超出了最初的 5 級量表。"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "Level 4 (人機協作完成特定任務)" },
+          { id: "optB", label: "B", text: "Level 5 (全面融合輔助)" },
+          { id: "optC", label: "C", text: "Level 6 (全新層級：即時互動與個人助理)" }
+        ],
+        verdict: "Level 6 (Advanced AI Integration)",
+        level: "核心概念：框架的未來擴展性 (Placeholders)",
+        risks: [
+          "科技進步太快，若評量框架是死板的，很快就會被淘汰。",
+          "作者特別在 CAIAF 框架中新增了 Level 6，並預留了未來的「擴充空間 (Placeholders)」。"
+        ],
+        teacher: [
+          "面對即時互動 AI，傳統評分已無意義。評量重點應放在學生是否能「理解並批判」AI 給出的即時建議。",
+          "教育框架必須像光譜一樣具備彈性，才能適應未來虛擬實境或腦機介面的出現。"
+        ]
       },
       {
-        title: "樣本 05：裝備差異的戰場",
-        desc: "付費高級 AI 做的圖表比免費版精美很多，導致成績落差。這引發什麼問題？",
-        options: [{id:"optA", label:"A", text:"責任歸屬"}, {id:"optB", label:"B", text:"公平與包容性"}, {id:"optC", label:"C", text:"教學對準"}],
-        verdict: "破壞公平與包容原則", level: "核心：數位鴻溝",
-        risks: ["評量變成家庭財力的競爭"], teacher: ["確保所有學生擁有同等工具存取權"]
+        title: "觀測樣本 05：裝備戰場 (探討「付費 vs 免費」的教育公平性)",
+        desc: "老師出了一份複雜的數據分析報告，宣佈「全面開放使用 AI」。學生 A 使用免費版 AI，得到錯誤架構拿到 C；學生 B 每月花 20 美金訂閱最高級付費版 AI，輕鬆畫出精美圖表拿到 A+。",
+        quotes: [
+          ["學生 A", "免費版一直斷線還亂回答，我根本沒辦法像他那樣做圖。"],
+          ["教師日誌", "學生 B 的報告無可挑剔，但這真的是他『本人』的實力嗎？"],
+          ["CAIAF 提示", "當成績與『購買高級 AI 的財力』掛鉤時，我們評量的是什麼？"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "破壞了學生的「責任歸屬」" },
+          { id: "optB", label: "B", text: "剝奪了低收入學生的「公平與包容」" },
+          { id: "optC", label: "C", text: "偏離了「教學對準」" }
+        ],
+        verdict: "嚴重違反「公平與包容 (Equity)」",
+        level: "核心概念：資源落差造成的評量失效",
+        risks: [
+          "全面開放 AI 看似開明，但若未提供統一工具，將導致嚴重的「裝備競賽」。",
+          "評量結果將反映出家庭的社經地位與財力，而非學生真正的學科能力。"
+        ],
+        teacher: [
+          "論文強調「公平與包容 (Equity and Inclusivity)」是五大道德原則之一。",
+          "教師若開放 AI，應確保所有學生都有平等存取同等 AI 工具的管道（例如由校方統一提供授權）。"
+        ]
       },
       {
-        title: "樣本 06：誰才是作者？",
-        desc: "AI 大幅提升了草稿的詞彙層次。學生交稿時應採取什麼具體行動？",
-        options: [{id:"optA", label:"A", text:"視為共同作者"}, {id:"optB", label:"B", text:"附上無 AI 原始草稿"}, {id:"optC", label:"C", text:"全部用引號標註"}],
-        verdict: "Level 3 規範：必須附上原始草稿", level: "核心：寫作透明性",
-        risks: ["模糊了學生真實進步幅度"], teacher: ["落實 Level 3 的透明化申報流程"]
+        title: "觀測樣本 06：誰是作者 (Level 3 的具體實作規範)",
+        desc: "學生熬夜寫出觀點極佳但文法普通的草稿，請 AI「幫忙潤飾文法」。結果 AI 不只修文法，還替換了大量高級詞彙，讀起來像資深學者。學生直接交出最終版，心想：「反正點子都是我的，不用特別標註吧？」",
+        quotes: [
+          ["學生終端", "這篇文章的靈魂是我的！AI 只是幫我化了個妝而已。"],
+          ["教師日誌", "這用詞太深奧了，我該怎麼知道原本的草稿長怎樣？"],
+          ["CAIAF 提示", "參考 CAIAF 框架中對於 Level 3 (AI-Assisted Editing) 的具體規範。"]
+        ],
+        options: [
+          { id: "optA", label: "A", text: "學生應將 AI 視為「共同作者」掛名" },
+          { id: "optB", label: "B", text: "學生應在附錄提供「無 AI 參與的原始草稿」" },
+          { id: "optC", label: "C", text: "學生應將 AI 潤飾的句子全部用引號框起" }
+        ],
+        verdict: "應在附錄提供原始草稿 (Level 3 規範)",
+        level: "核心概念：Level 3 具體實作與透明性",
+        risks: [
+          "缺乏「透明性 (Transparency)」，教師無法評估學生真實的寫作能力與進步幅度。",
+          "過度潤飾會模糊「學生原創」與「機器生成」的界線，引發學術誠信爭議。"
+        ],
+        teacher: [
+          "論文在 Level 3 明確規範：允許 AI 潤飾以提升品質，但「必須在附錄提供無 AI 參與的原始草稿」。",
+          "這項具體規範能有效解決目前校園中最常見的「我只是拿來改文法」的爭議。"
+        ]
       }
     ];
 
@@ -269,11 +389,20 @@
     // Host Logic
     function updateHostUI() {
       const c = cases[currentCaseIndex];
+      document.getElementById('hostCaseMeta').innerText = `SAMPLE_${String(currentCaseIndex + 1).padStart(2, '0')} // ${cases.length}`;
       document.getElementById('hostTitle').innerText = c.title;
       document.getElementById('hostDesc').innerText = c.desc;
+      
+      document.getElementById('hostQuotes').innerHTML = c.quotes.map(q => `
+        <div class="quote"><b>[${q[0]}]</b> ${q[1]}</div>
+      `).join('');
+
       document.getElementById('hostStatsArea').innerHTML = c.options.map(opt => `
-        <div style="margin-bottom:20px;">
-          <div style="display:flex; justify-content:space-between;"><span>${opt.text}</span><span id="count-${opt.id}">0 票</span></div>
+        <div style="margin-bottom:28px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-size: 18px; font-weight: 600;">[${opt.label}] ${opt.text}</span>
+            <span id="count-${opt.id}" style="font-family: monospace; font-size: 20px; font-weight: bold;">0 票</span>
+          </div>
           <div class="stat-bar-bg"><div id="bar-${opt.id}" class="stat-bar-fill fill-${opt.id}"></div></div>
         </div>
       `).join('');
@@ -301,8 +430,8 @@
         const c = cases[currentCaseIndex];
         document.getElementById('modalVerdictResult').innerText = c.verdict;
         document.getElementById('modalVerdictLevel').innerText = c.level;
-        document.getElementById('modalRisks').innerHTML = c.risks.map(r => `<li>${r}</li>`).join('');
-        document.getElementById('modalTeacher').innerHTML = c.teacher.map(t => `<li>${t}</li>`).join('');
+        document.getElementById('modalRisks').innerHTML = c.risks.map(r => `<li style="margin-bottom:8px;">${r}</li>`).join('');
+        document.getElementById('modalTeacher').innerHTML = c.teacher.map(t => `<li style="margin-bottom:8px;">${t}</li>`).join('');
         document.getElementById('verdictOverlay').style.display = 'flex';
         setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'verdict' });
       }, 1500);
@@ -313,14 +442,12 @@
     // Voter Logic
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
-        // --- 這裡加上了防呆機制 ---
         if(ds.exists()){
           const data = ds.data();
           currentCaseIndex = data.index;
           if(data.status === 'voting') loadVoterCase();
           else showVoterVerdict();
         } else {
-          // 若主控台尚未開啟，顯示明確的等待訊息
           document.getElementById('voterTitle').innerText = "⏳ 等待連線中...";
           document.getElementById('voterDesc').innerText = "請等待講者在大螢幕上啟動系統與發送題目。";
           document.getElementById('voterOptions').innerHTML = "";
@@ -336,7 +463,9 @@
       document.getElementById('voterTitle').innerText = c.title;
       document.getElementById('voterDesc').innerText = c.desc;
       document.getElementById('voterOptions').innerHTML = c.options.map(opt => `
-        <button class="mobile-vote-btn" onclick="submitVote('${opt.id}', this)">${opt.text}</button>
+        <button class="mobile-vote-btn" onclick="submitVote('${opt.id}', this)">
+          <span style="font-family: monospace; font-weight: 900; margin-right: 10px;">[${opt.label}]</span>${opt.text}
+        </button>
       `).join('');
       document.getElementById('voterCaseContent').style.display = 'block';
       document.getElementById('voterVerdictArea').style.display = 'none';
@@ -344,21 +473,24 @@
     }
 
     window.submitVote = (type, btn) => {
-      setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type });
-      document.getElementById('voterOptions').style.display = 'none';
-      document.getElementById('waitMessage').style.display = 'block';
+      document.querySelectorAll('.mobile-vote-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      setTimeout(() => {
+        setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type });
+        document.getElementById('voterOptions').style.display = 'none';
+        document.getElementById('waitMessage').style.display = 'block';
+      }, 300);
     };
 
     function showVoterVerdict() {
       const c = cases[currentCaseIndex];
       document.getElementById('voterVerdictResult').innerText = c.verdict;
       document.getElementById('voterVerdictLevel').innerText = c.level;
-      document.getElementById('voterRisks').innerHTML = c.risks.map(r => `<li>${r}</li>`).join('');
+      document.getElementById('voterRisks').innerHTML = c.risks.map(r => `<li style="margin-bottom:8px;">${r}</li>`).join('');
+      document.getElementById('voterTeacher').innerHTML = c.teacher.map(t => `<li style="margin-bottom:8px;">${t}</li>`).join('');
       document.getElementById('voterCaseContent').style.display = 'none';
       document.getElementById('voterVerdictArea').style.display = 'block';
     }
-
-    window.goHome = () => location.reload();
   </script>
 </body>
 </html>

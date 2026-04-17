@@ -187,7 +187,7 @@
   </div>
 
   <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.1.5
+    Designed by 日安匕禾 Bever Tech System | Version: v3.1.7
   </footer>
 
   <script type="module">
@@ -326,6 +326,7 @@
     let currentRole = null;
     let currentCaseIndex = 0;
     let userId = null;
+    let votesUnsubscribe = null; 
     const appId = 'caiaf-lab-v1';
 
     const app = initializeApp(firebaseConfig);
@@ -338,6 +339,7 @@
         userId = user.uid;
         document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中";
         if(currentRole === 'host') {
+          // 講者啟動主控台的瞬間，強制將狀態更新為 voting，全場觀眾手機同時解鎖題目！
           setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
           listenVotes();
         }
@@ -352,7 +354,8 @@
         document.getElementById('hostScreen').classList.add('active');
         updateHostUI();
         if (userId) {
-          setDoc(doc(db, 'state', appId), { index: 0, status: 'voting' });
+          // 講者啟動主控台的瞬間，強制將狀態更新為 voting
+          setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
           listenVotes();
         }
       } else {
@@ -381,7 +384,10 @@
     }
 
     function listenVotes() {
-      onSnapshot(collection(db, 'votes', appId, currentCaseIndex.toString()), (snap) => {
+      if (votesUnsubscribe) {
+        votesUnsubscribe(); 
+      }
+      votesUnsubscribe = onSnapshot(collection(db, 'votes', appId, currentCaseIndex.toString()), (snap) => {
         let counts = { optA:0, optB:0, optC:0 };
         snap.forEach(d => counts[d.data().vote]++);
         const total = snap.size || 1;
@@ -389,11 +395,28 @@
           document.getElementById(`count-${id}`).innerText = `${counts[id]} 票`;
           document.getElementById(`bar-${id}`).style.width = `${(counts[id]/total)*100}%`;
         });
+      }, (error) => {
+        console.error("Vote listen error:", error);
       });
     }
 
-    window.nextCase = () => { if(currentCaseIndex < cases.length-1) { currentCaseIndex++; updateHostUI(); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); } };
-    window.prevCase = () => { if(currentCaseIndex > 0) { currentCaseIndex--; updateHostUI(); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); } };
+    window.nextCase = () => { 
+      if(currentCaseIndex < cases.length-1) { 
+        currentCaseIndex++; 
+        updateHostUI(); 
+        listenVotes(); 
+        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); 
+      } 
+    };
+    
+    window.prevCase = () => { 
+      if(currentCaseIndex > 0) { 
+        currentCaseIndex--; 
+        updateHostUI(); 
+        listenVotes(); 
+        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); 
+      } 
+    };
 
     window.announceVerdict = () => {
       document.getElementById('analyzingOverlay').classList.add('play');
@@ -425,13 +448,39 @@
       }
     };
 
+    // 🌟 自動待機機制：當講者關閉瀏覽器分頁時，自動將系統設為待機狀態
+    window.addEventListener('beforeunload', () => {
+      if (currentRole === 'host') {
+        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
+      }
+    });
+
+    // 🌟 隱藏鍵盤捷徑：在主控台按 S 鍵，手動強制全場進入待機
+    document.addEventListener('keydown', (e) => {
+      if (currentRole === 'host' && (e.key === 's' || e.key === 'S')) {
+        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
+      }
+    });
+
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
         if(ds.exists()){
           const data = ds.data();
-          currentCaseIndex = data.index;
-          if(data.status === 'voting') loadVoterCase();
-          else showVoterVerdict();
+          currentCaseIndex = data.index || 0;
+          
+          if(data.status === 'voting') {
+            loadVoterCase();
+          } else if(data.status === 'verdict') {
+            showVoterVerdict();
+          } else {
+            // 🌟 接收到 standby (待機) 訊號時，觀眾手機顯示等待畫面
+            document.getElementById('voterTitle').innerText = "⏳ 系統待機中...";
+            document.getElementById('voterDesc').innerText = "請等待講者啟動主控台並發送題目。";
+            document.getElementById('voterOptions').style.display = 'none';
+            document.getElementById('voterCaseContent').style.display = 'block';
+            document.getElementById('voterVerdictArea').style.display = 'none';
+            document.getElementById('waitMessage').style.display = 'none';
+          }
         } else {
           document.getElementById('voterTitle').innerText = "⏳ 等待連線中...";
           document.getElementById('voterDesc').innerText = "請等待講者在大螢幕上啟動系統與發送題目。";
@@ -440,7 +489,7 @@
           document.getElementById('voterVerdictArea').style.display = 'none';
           document.getElementById('waitMessage').style.display = 'none';
         }
-      });
+      }, (error) => console.error("State listen error:", error));
     }
 
     function loadVoterCase() {
@@ -453,7 +502,6 @@
         </button>
       `).join('');
       
-      // 🌟 修復關鍵：切換題目時，強制將選項區塊重新顯示出來！
       document.getElementById('voterOptions').style.display = 'block';
       
       document.getElementById('voterCaseContent').style.display = 'block';

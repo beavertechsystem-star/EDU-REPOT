@@ -70,9 +70,30 @@
     .stat-bar-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.5s ease; }
     .fill-optA { background: var(--optA); } .fill-optB { background: var(--optB); } .fill-optC { background: var(--optC); }
 
-    /* 🛡️ 終極隔離：控制按鈕預設隱藏，只在 HostScreen 激活時出現 */
     .host-controls { display: none; }
     #hostScreen.active .host-controls { display: flex; align-items: center; }
+
+    /* 🌟 詳細版 CAIAF 分級圖表樣式 🌟 */
+    .caiaf-detailed-table {
+      margin-top: 30px; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
+      background: rgba(0,0,0,0.3); text-align: left;
+    }
+    .table-header {
+      background: rgba(0, 240, 255, 0.15); display: grid; grid-template-columns: 80px 1fr;
+      padding: 12px; border-bottom: 1px solid var(--border-light); font-weight: 900; color: var(--cyan);
+    }
+    .table-row {
+      display: grid; grid-template-columns: 80px 1fr; padding: 14px 12px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.1); transition: background 0.3s;
+    }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: rgba(0, 240, 255, 0.03); }
+    .lv-badge {
+      width: 55px; height: 24px; background: var(--cyan); color: var(--bg-dark);
+      font-size: 12px; font-weight: 900; border-radius: 4px; display: grid; place-items: center;
+    }
+    .lv-content b { color: var(--cyan); font-size: 15px; display: block; margin-bottom: 4px; }
+    .lv-content p { margin: 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
 
     /* Overlay */
     .analyzing-overlay {
@@ -96,7 +117,7 @@
 </head>
 <body>
 
-  <!-- 1. 首頁：絕對沒有控制按鈕 -->
+  <!-- 1. 首頁 -->
   <div id="roleScreen" class="screen active">
     <div class="glass-panel" style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
       <div id="connBadge" class="btn-primary" style="font-size: 12px; padding: 4px 12px; margin-bottom: 20px; display: inline-block; border-radius: 20px;">Firebase 狀態載入中...</div>
@@ -107,7 +128,7 @@
     </div>
   </div>
 
-  <!-- 2. 觀眾手機畫面：完全沒有控制按鈕 -->
+  <!-- 2. 觀眾手機畫面 -->
   <div id="voterScreen" class="screen">
     <div id="voterCaseContent">
       <h2 id="voterTitle" style="color: #fff; margin-bottom: 10px;">載入中...</h2>
@@ -130,34 +151,44 @@
         <h4 style="color: var(--cyan); margin-top: 0;">💡 CAIAF 教師建議</h4>
         <ul id="voterTeacher" style="color: var(--sub); line-height: 1.6; padding-left: 20px;"></ul>
       </div>
+
+      <!-- 🌟 觀眾端終極詳細圖表 -->
+      <div id="finalChartAudience" style="display:none;">
+        <h3 style="color: var(--cyan); margin-top: 40px; letter-spacing: 2px;">🎓 CAIAF AI 評量分級詳細框架</h3>
+        <div class="caiaf-detailed-table">
+            <div class="table-header"><div>層級</div><div>定義與使用規範</div></div>
+            <div class="table-row"><div class="lv-badge">LV 1</div><div class="lv-content"><b>禁止使用 (No AI)</b><p>評量嚴禁任何 AI 參與。完全依賴學生的傳統研究能力與個人思考產出。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪、關鍵字建議。最終內容仍由人類撰寫，僅參考 AI 的靈感。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫原始草稿，AI 用於修正文法、措辭與風格調整。需在附錄提供無 AI 潤飾的初稿。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成評量中的特定子任務（如產出程式碼片段、數據圖表），再由人類審核與整合。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程與 AI 深度協作。評量重點轉向學生如何引導、批判、驗證並精煉 AI 產出的最終成果。</p></div></div>
+            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>預留位。針對即時互動 AI、虛擬實境或自主智能代理等未來技術所設計的動態評量層級。</p></div></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 3. 大螢幕投影畫面 (主控台)：獨家包含控制按鈕與完整題目 -->
+  <!-- 3. 主控台 -->
   <div id="hostScreen" class="screen">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-      <h2 style="color: var(--cyan); letter-spacing: 2px;">CAIAF_SPECTRUM <span id="hostStatusBadge" style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">同步中</span></h2>
-      
-      <!-- 只有這裡會顯示控制按鈕 -->
+      <h2 style="letter-spacing: 2px;">
+        <span onclick="location.reload()" style="color: var(--cyan); cursor: pointer; text-decoration: underline;" title="回到首頁">CAIAF</span>_SPECTRUM 
+        <span id="hostStatusBadge" style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">同步中</span>
+      </h2>
       <div class="host-controls">
         <button id="clearBtn" style="background:rgba(255,50,50,0.15); color:#ff6b6b; padding:10px 16px; margin-right:15px; border: 1px solid rgba(255,50,50,0.4); border-radius: 8px; cursor: pointer;" onclick="clearVotes()">[重置現場顧問群決策分布]</button>
         <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px; border: none; border-radius: 8px; cursor: pointer;" onclick="prevCase()">[< 上一題]</button>
         <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; border: none; border-radius: 8px; cursor: pointer;" onclick="nextCase()">[下一題 >]</button>
       </div>
     </div>
-    
     <div style="display: flex; justify-content: center; width: 100%;">
       <div class="glass-panel" style="width: 100%; max-width: 900px; display: flex; flex-direction: column; text-align: center;">
-          <!-- 題目資訊顯示 -->
           <div id="hostCaseMeta" style="color: var(--cyan); font-family: monospace; letter-spacing: 1px; margin-bottom: 10px;"></div>
           <h1 id="hostTitle" style="font-size: 28px; margin-bottom: 16px;"></h1>
           <p id="hostDesc" style="font-size: 18px; line-height: 1.8; color: var(--sub); margin-bottom: 30px; text-align: left; padding: 0 40px;"></p>
-          
-          <!-- 決策分佈顯示 -->
           <h3 style="text-align:center; color: var(--cyan); font-family: monospace; letter-spacing: 2px; margin-bottom: 30px; border-top: 1px solid rgba(0,240,255,0.2); padding-top: 30px;">📡 現場顧問群決策分佈</h3>
           <div id="hostStatsArea" style="flex: 1; text-align: left;"></div>
-          
-          <button class="btn-primary" style="width:100%; margin-top: 20px; font-size: 20px; padding: 20px;" onclick="announceVerdict()">⚡ 啟動 CAIAF 框架分析</button>
+          <button id="analyzeBtn" class="btn-primary" style="width:100%; margin-top: 20px; font-size: 20px; padding: 20px;" onclick="announceVerdict()">⚡ 啟動 CAIAF 框架分析</button>
       </div>
     </div>
   </div>
@@ -178,13 +209,29 @@
           <ul id="modalTeacher" style="color: var(--sub); line-height: 1.8; padding-left: 20px; font-size: 16px;"></ul>
         </div>
       </div>
-      <button class="btn-primary" style="padding: 16px 40px;" onclick="closeVerdict()">關閉並準備下一題</button>
+      
+      <!-- 第六題揭開詳細表格按鈕 -->
+      <div id="finalSummaryTrigger" style="display:none; margin-bottom: 20px;">
+        <button class="btn-primary" style="width: 100%; background: linear-gradient(135deg, #0077ff, #A855F7); border: none;" onclick="revealFullSpectrum()">🏆 揭曉：CAIAF AI 評量分級光譜圖</button>
+      </div>
+
+      <!-- 主控台詳細表格 -->
+      <div id="finalChartHost" style="display:none; margin-bottom: 30px;">
+        <div class="caiaf-detailed-table" style="max-width: 650px; margin: 0 auto; background: rgba(255,255,255,0.03);">
+            <div class="table-header"><div>層級</div><div>定義與使用規範</div></div>
+            <div class="table-row"><div class="lv-badge">LV 1</div><div class="lv-content"><b>禁止使用 (No AI)</b><p>評量嚴禁任何 AI 參與。完全依賴學生的個人思考產出。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪、關鍵字建議。最終內容仍由人類撰寫。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫原始草稿，AI 協助修改文法。需提供原始初稿。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成特定子任務，再由人類審核與整合。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程與 AI 協作。評量重點轉向批判性監督與驗證能力。</p></div></div>
+            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>預留位。針對即時互動與自主智能代理等未來技術。</p></div></div>
+        </div>
+      </div>
+      <button class="btn-primary" style="padding: 16px 40px;" onclick="closeVerdict()">關閉分析視窗</button>
     </div>
   </div>
 
-  <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.2.2
-  </footer>
+  <footer class="app-footer">Designed by 日安匕禾 Bever Tech System | Version: v3.2.5</footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -282,58 +329,29 @@
       }
     ];
 
-    let currentRole = null;
-    let currentCaseIndex = 0;
-    let userId = null;
-    let votesUnsubscribe = null; 
+    let currentRole = null, currentCaseIndex = 0, userId = null, votesUnsubscribe = null;
     const appId = 'caiaf-lab-v1';
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 
     signInAnonymously(auth);
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        userId = user.uid;
-        document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中";
-        
-        // 核心修正：移除這裡的 setDoc 指令，講者沒按按鈕之前，什麼都不會發生！
-        if(currentRole === 'host') {
-          listenVotes();
-        }
-        if(currentRole === 'voter') listenState();
-      }
+      if (user) { userId = user.uid; document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中"; if(currentRole === 'voter') listenState(); }
     });
 
     window.initApp = (role) => {
-      currentRole = role;
-      document.getElementById('roleScreen').classList.remove('active');
-      if(role === 'host') {
-        document.getElementById('hostScreen').classList.add('active');
-        updateHostUI();
-        if (userId) {
-          // 只有此時講者親自啟動主控台，才會發送訊號
-          setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
-          listenVotes();
-        }
-      } else {
-        document.getElementById('voterScreen').classList.add('active');
-        if (userId) listenState();
-      }
+      currentRole = role; document.getElementById('roleScreen').classList.remove('active');
+      if(role === 'host') { document.getElementById('hostScreen').classList.add('active'); updateHostUI(); if (userId) { setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); listenVotes(); } }
+      else { document.getElementById('voterScreen').classList.add('active'); if (userId) listenState(); }
     };
 
     function updateHostUI() {
       const c = cases[currentCaseIndex];
       document.getElementById('hostCaseMeta').innerText = `SAMPLE_${String(currentCaseIndex + 1).padStart(2, '0')} // ${cases.length}`;
-      document.getElementById('hostTitle').innerText = c.title;
-      document.getElementById('hostDesc').innerText = c.desc;
+      document.getElementById('hostTitle').innerText = c.title; document.getElementById('hostDesc').innerText = c.desc;
+      document.getElementById('analyzeBtn').innerText = (currentCaseIndex === 5) ? "⚡ 啟動終極框架分析與總結" : "⚡ 啟動 CAIAF 框架分析";
       document.getElementById('hostStatsArea').innerHTML = c.options.map(opt => `
         <div style="margin-bottom:28px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="font-size: 18px; font-weight: 600;">[${opt.label}] ${opt.text}</span>
-            <span id="count-${opt.id}" style="font-family: monospace; font-size: 20px; font-weight: bold;">0 票</span>
-          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size: 18px; font-weight: 600;">[${opt.label}] ${opt.text}</span><span id="count-${opt.id}" style="font-family: monospace; font-size: 20px; font-weight: bold;">0 票</span></div>
           <div class="stat-bar-bg"><div id="bar-${opt.id}" class="stat-bar-fill fill-${opt.id}"></div></div>
         </div>
       `).join('');
@@ -342,127 +360,87 @@
     function listenVotes() {
       if (votesUnsubscribe) votesUnsubscribe(); 
       votesUnsubscribe = onSnapshot(collection(db, 'votes', appId, currentCaseIndex.toString()), (snap) => {
-        let counts = { optA:0, optB:0, optC:0 };
-        snap.forEach(d => counts[d.data().vote]++);
+        let counts = { optA:0, optB:0, optC:0 }; snap.forEach(d => counts[d.data().vote]++);
         const total = snap.size || 1;
         ['optA','optB','optC'].forEach(id => {
-          const bar = document.getElementById(`bar-${id}`);
-          const countLabel = document.getElementById(`count-${id}`);
-          if(bar && countLabel) {
-            countLabel.innerText = `${counts[id]} 票`;
-            bar.style.width = `${(counts[id]/total)*100}%`;
-          }
+          const bar = document.getElementById(`bar-${id}`), countLabel = document.getElementById(`count-${id}`);
+          if(bar && countLabel) { countLabel.innerText = `${counts[id]} 票`; bar.style.width = `${(counts[id]/total)*100}%`; }
         });
       });
     }
 
-    window.nextCase = () => { 
-      if(currentCaseIndex < cases.length-1) { 
-        currentCaseIndex++; updateHostUI(); listenVotes(); 
-        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); 
-      } 
-    };
-    window.prevCase = () => { 
-      if(currentCaseIndex > 0) { 
-        currentCaseIndex--; updateHostUI(); listenVotes(); 
-        setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); 
-      } 
-    };
+    window.nextCase = () => { if(currentCaseIndex < cases.length-1) { currentCaseIndex++; updateHostUI(); listenVotes(); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); } };
+    window.prevCase = () => { if(currentCaseIndex > 0) { currentCaseIndex--; updateHostUI(); listenVotes(); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' }); } };
 
     window.announceVerdict = () => {
       document.getElementById('analyzingOverlay').classList.add('play');
       setTimeout(() => {
         document.getElementById('analyzingOverlay').classList.remove('play');
         const c = cases[currentCaseIndex];
-        document.getElementById('modalVerdictResult').innerText = c.verdict;
-        document.getElementById('modalVerdictLevel').innerText = c.level;
+        document.getElementById('modalVerdictResult').innerText = c.verdict; document.getElementById('modalVerdictLevel').innerText = c.level;
         document.getElementById('modalRisks').innerHTML = c.risks.map(r => `<li>${r}</li>`).join('');
         document.getElementById('modalTeacher').innerHTML = c.teacher.map(t => `<li>${t}</li>`).join('');
+        document.getElementById('finalSummaryTrigger').style.display = (currentCaseIndex === 5) ? 'block' : 'none';
+        document.getElementById('finalChartHost').style.display = 'none';
         document.getElementById('verdictOverlay').style.display = 'flex';
         setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'verdict' });
       }, 1500);
     };
 
+    window.revealFullSpectrum = () => {
+        document.getElementById('finalSummaryTrigger').style.display = 'none'; document.getElementById('finalChartHost').style.display = 'block';
+        setDoc(doc(db, 'state', appId), { index: 5, status: 'final_show' });
+    };
+
     window.closeVerdict = () => { document.getElementById('verdictOverlay').style.display = 'none'; };
 
     window.clearVotes = async () => {
-      const votesRef = collection(db, 'votes', appId, currentCaseIndex.toString());
-      const snapshot = await getDocs(votesRef);
-      const deletePromises = [];
-      snapshot.forEach((docSnap) => deletePromises.push(deleteDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), docSnap.id))));
-      await Promise.all(deletePromises);
+      const votesRef = collection(db, 'votes', appId, currentCaseIndex.toString()), snapshot = await getDocs(votesRef);
+      const delPromises = []; snapshot.forEach((docSnap) => delPromises.push(deleteDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), docSnap.id))));
+      await Promise.all(delPromises); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
     };
 
-    // 🌟 鍵盤捷徑 (含 S 鍵切換待機)
     document.addEventListener('keydown', (e) => {
       if (currentRole === 'host') {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') nextCase();
         else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevCase();
         else if (e.key === 'c' || e.key === 'C') clearVotes();
         else if (e.key === 's' || e.key === 'S') setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
-        else if (e.key === 'Enter') {
-          if (document.getElementById('verdictOverlay').style.display === 'flex') closeVerdict();
-          else announceVerdict();
-        }
+        else if (e.key === 'Enter') { if (document.getElementById('verdictOverlay').style.display === 'flex') closeVerdict(); else announceVerdict(); }
       }
-    });
-
-    // 🌟 當講者關閉網頁或離開主控台，自動設為待機模式
-    window.addEventListener('beforeunload', () => {
-      if(currentRole === 'host') setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
     });
 
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
         if(ds.exists()){
-          const data = ds.data();
-          currentCaseIndex = data.index || 0;
+          const data = ds.data(); currentCaseIndex = data.index || 0;
           if(data.status === 'voting') loadVoterCase();
-          else if(data.status === 'verdict') showVoterVerdict();
+          else if(data.status === 'verdict') showVoterVerdict(false);
+          else if(data.status === 'final_show') showVoterVerdict(true);
           else {
-            // 待機畫面邏輯
-            document.getElementById('voterTitle').innerText = "⏳ 講者準備中...";
-            document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
-            document.getElementById('voterOptions').innerHTML = "";
-            document.getElementById('voterCaseContent').style.display = 'block';
-            document.getElementById('voterVerdictArea').style.display = 'none';
+            document.getElementById('voterTitle').innerText = "⏳ 講者準備中..."; document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
+            document.getElementById('voterOptions').innerHTML = ""; document.getElementById('voterCaseContent').style.display = 'block'; document.getElementById('voterVerdictArea').style.display = 'none';
           }
-        } else {
-            // 初始無資料狀態
-            document.getElementById('voterTitle').innerText = "⏳ 講者準備中...";
-            document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
         }
       });
     }
 
     function loadVoterCase() {
       const c = cases[currentCaseIndex];
-      document.getElementById('voterTitle').innerText = c.title;
-      document.getElementById('voterDesc').innerText = c.desc;
-      document.getElementById('voterOptions').innerHTML = c.options.map(opt => `
-        <button class="mobile-vote-btn" onclick="submitVote('${opt.id}', this)">
-          <span style="font-family: monospace; font-weight: 900; margin-right: 10px;">[${opt.label}]</span>${opt.text}
-        </button>
-      `).join('');
-      document.getElementById('voterCaseContent').style.display = 'block';
-      document.getElementById('voterVerdictArea').style.display = 'none';
-      document.getElementById('waitMessage').style.display = 'none';
+      document.getElementById('voterTitle').innerText = c.title; document.getElementById('voterDesc').innerText = c.desc;
+      document.getElementById('voterOptions').innerHTML = c.options.map(opt => `<button class="mobile-vote-btn" onclick="submitVote('${opt.id}', this)"><span style="font-family: monospace; font-weight: 900; margin-right: 10px;">[${opt.label}]</span>${opt.text}</button>`).join('');
+      document.getElementById('voterCaseContent').style.display = 'block'; document.getElementById('voterVerdictArea').style.display = 'none'; document.getElementById('waitMessage').style.display = 'none';
     }
 
-    window.submitVote = (type, btn) => {
-      setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type });
-      document.getElementById('voterOptions').innerHTML = "";
-      document.getElementById('waitMessage').style.display = 'block';
-    };
+    window.submitVote = (type, btn) => { setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type }); document.getElementById('voterOptions').innerHTML = ""; document.getElementById('waitMessage').style.display = 'block'; };
 
-    function showVoterVerdict() {
+    function showVoterVerdict(showFinal) {
       const c = cases[currentCaseIndex];
-      document.getElementById('voterVerdictResult').innerText = c.verdict;
-      document.getElementById('voterVerdictLevel').innerText = c.level;
+      document.getElementById('voterVerdictResult').innerText = c.verdict; document.getElementById('voterVerdictLevel').innerText = c.level;
       document.getElementById('voterRisks').innerHTML = c.risks.map(r => `<li>${r}</li>`).join('');
       document.getElementById('voterTeacher').innerHTML = c.teacher.map(t => `<li>${t}</li>`).join('');
-      document.getElementById('voterCaseContent').style.display = 'none';
-      document.getElementById('voterVerdictArea').style.display = 'block';
+      document.getElementById('voterCaseContent').style.display = 'none'; document.getElementById('voterVerdictArea').style.display = 'block';
+      document.getElementById('finalChartAudience').style.display = (showFinal && currentCaseIndex === 5) ? 'block' : 'none';
     }
   </script>
 </body>

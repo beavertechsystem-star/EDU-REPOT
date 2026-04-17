@@ -83,6 +83,13 @@
 
     .verdict-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 101; }
     .verdict-card { background: var(--bg-panel); border: 1px solid var(--cyan); padding: 40px; max-width: 800px; width: 90%; border-radius: 20px; }
+
+    /* Footer 樣式 */
+    .app-footer {
+      text-align: center; padding: 16px; color: var(--sub); font-size: 13px; 
+      font-family: monospace; position: relative; z-index: 10; opacity: 0.7;
+      letter-spacing: 1px;
+    }
   </style>
 </head>
 <body>
@@ -152,12 +159,17 @@
     </div>
   </div>
 
+  <!-- 專屬版權與版本號宣告 -->
+  <footer class="app-footer">
+    Designed by 日安比和 | Version: v3.0.0
+  </footer>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // 🏆 請確認您的 Firebase 金鑰
+    // 🏆 您的 Firebase 金鑰
     const firebaseConfig = {
       apiKey: "AIzaSyD6rFjTduTHM71uD9uF41ZZGnaj-2TQcag",
       authDomain: "music-sel-wordcloud.firebaseapp.com",
@@ -228,7 +240,10 @@
       if (user) {
         userId = user.uid;
         document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中";
-        if(currentRole === 'host') listenVotes();
+        if(currentRole === 'host') {
+          setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
+          listenVotes();
+        }
         if(currentRole === 'voter') listenState();
       }
     });
@@ -239,9 +254,15 @@
       if(role === 'host') {
         document.getElementById('hostScreen').classList.add('active');
         updateHostUI();
-        setDoc(doc(db, 'state', appId), { index: 0, status: 'voting' });
+        if (userId) {
+          setDoc(doc(db, 'state', appId), { index: 0, status: 'voting' });
+          listenVotes();
+        }
       } else {
         document.getElementById('voterScreen').classList.add('active');
+        if (userId) {
+          listenState();
+        }
       }
     };
 
@@ -292,11 +313,20 @@
     // Voter Logic
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
+        // --- 這裡加上了防呆機制 ---
         if(ds.exists()){
           const data = ds.data();
           currentCaseIndex = data.index;
           if(data.status === 'voting') loadVoterCase();
           else showVoterVerdict();
+        } else {
+          // 若主控台尚未開啟，顯示明確的等待訊息
+          document.getElementById('voterTitle').innerText = "⏳ 等待連線中...";
+          document.getElementById('voterDesc').innerText = "請等待講者在大螢幕上啟動系統與發送題目。";
+          document.getElementById('voterOptions').innerHTML = "";
+          document.getElementById('voterCaseContent').style.display = 'block';
+          document.getElementById('voterVerdictArea').style.display = 'none';
+          document.getElementById('waitMessage').style.display = 'none';
         }
       });
     }

@@ -66,14 +66,13 @@
 
     /* Host UI */
     #hostScreen { padding: 24px; display: flex; flex-direction: column; }
-    .host-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; min-height: 0; }
     .stat-bar-bg { width: 100%; height: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-top: 8px; }
     .stat-bar-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.5s ease; }
     .fill-optA { background: var(--optA); } .fill-optB { background: var(--optB); } .fill-optC { background: var(--optC); }
-    
-    .quotes { display: grid; gap: 16px; margin-top: 20px; }
-    .quote { padding: 18px; background: rgba(0, 240, 255, 0.03); border-radius: 12px; border-left: 3px solid var(--cyan); font-size: 16px; line-height: 1.7; }
-    .quote b { color: var(--cyan); display: inline-block; margin-bottom: 6px; font-size: 14px; letter-spacing: 1px; font-family: monospace; background: rgba(0,240,255,0.1); padding: 2px 8px; border-radius: 4px; }
+
+    /* 雙重防護鎖：強迫控制按鈕預設為隱藏 */
+    .host-controls { display: none; align-items: center; }
+    #hostScreen.active .host-controls { display: flex; }
 
     /* Overlay */
     .analyzing-overlay {
@@ -98,6 +97,7 @@
 </head>
 <body>
 
+  <!-- 首頁：只有身分選擇按鈕，絕對乾淨 -->
   <div id="roleScreen" class="screen active">
     <div class="glass-panel" style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
       <div id="connBadge" class="btn-primary" style="font-size: 12px; padding: 4px 12px; margin-bottom: 20px; display: inline-block; border-radius: 20px;">Firebase 狀態載入中...</div>
@@ -108,6 +108,7 @@
     </div>
   </div>
 
+  <!-- 觀眾手機畫面：只有題目與投票按鈕，絕對乾淨 -->
   <div id="voterScreen" class="screen">
     <div id="voterCaseContent">
       <h2 id="voterTitle" style="color: #fff; margin-bottom: 10px;">載入中...</h2>
@@ -133,24 +134,32 @@
     </div>
   </div>
 
+  <!-- 大螢幕投影畫面 (主控台)：獨家包含控制按鈕與完整題目資訊 -->
   <div id="hostScreen" class="screen">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
       <h2 style="color: var(--cyan); letter-spacing: 2px;">CAIAF_SPECTRUM <span style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">系統連線：穩定</span></h2>
-      <div>
-        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px;" onclick="prevCase()">[< 上一題]</button>
-        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px;" onclick="nextCase()">[下一題 >]</button>
+      
+      <!-- 講者專屬控制按鈕區 (雙重鎖定) -->
+      <div class="host-controls">
+        <button id="clearBtn" style="background:rgba(255,50,50,0.15); color:#ff6b6b; padding:10px 16px; margin-right:15px; border: 1px solid rgba(255,50,50,0.4); border-radius: 8px; cursor: pointer;" onclick="clearVotes()">[重置現場顧問群決策分布]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px; border: none; border-radius: 8px; cursor: pointer;" onclick="prevCase()">[< 上一題]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; border: none; border-radius: 8px; cursor: pointer;" onclick="nextCase()">[下一題 >]</button>
       </div>
     </div>
-    <div class="host-grid">
-      <div class="glass-panel" style="overflow-y: auto; max-height: calc(100vh - 200px);">
-        <div id="hostCaseMeta" style="color: var(--cyan); font-family: monospace; letter-spacing: 1px; margin-bottom: 10px;"></div>
-        <h1 id="hostTitle" style="font-size: 32px; margin-bottom: 16px;"></h1>
-        <p id="hostDesc" style="font-size: 18px; line-height: 1.8; color: var(--sub);"></p>
-        <div id="hostQuotes" class="quotes"></div>
-      </div>
-      <div class="glass-panel" style="display: flex; flex-direction: column;">
-        <h3 style="text-align:center; color: var(--cyan); font-family: monospace; letter-spacing: 2px; margin-bottom: 40px;">📡 現場顧問群決策分佈</h3>
+    
+    <!-- 唯一的一個大格子，置中顯示，包含完整題目敘述與票數 -->
+    <div style="display: flex; justify-content: center; width: 100%;">
+      <div class="glass-panel" style="width: 100%; max-width: 900px; display: flex; flex-direction: column;">
+        
+        <!-- 題目與情境敘述區 -->
+        <div id="hostCaseMeta" style="color: var(--cyan); font-family: monospace; letter-spacing: 1px; margin-bottom: 10px; text-align: center;"></div>
+        <h1 id="hostTitle" style="font-size: 28px; margin-bottom: 16px; text-align: center;"></h1>
+        <p id="hostDesc" style="font-size: 18px; line-height: 1.8; color: var(--sub); margin-bottom: 30px; padding: 0 20px;"></p>
+        
+        <!-- 決策分佈區 -->
+        <h3 style="text-align:center; color: var(--cyan); font-family: monospace; letter-spacing: 2px; margin-bottom: 30px; border-top: 1px solid rgba(0,240,255,0.2); padding-top: 30px;">📡 現場顧問群決策分佈</h3>
         <div id="hostStatsArea" style="flex: 1;"></div>
+        
         <button class="btn-primary" style="width:100%; margin-top: 20px; font-size: 20px; padding: 20px;" onclick="announceVerdict()">⚡ 啟動 CAIAF 框架分析</button>
       </div>
     </div>
@@ -178,15 +187,14 @@
   </div>
 
   <footer class="app-footer">
-    Designed by 日安匕禾 Bever Tech System | Version: v3.0.4
+    Designed by 日安匕禾 Bever Tech System | Version: v3.1.4
   </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // 🏆 您的 Firebase 金鑰
     const firebaseConfig = {
       apiKey: "AIzaSyD6rFjTduTHM71uD9uF41ZZGnaj-2TQcag",
       authDomain: "music-sel-wordcloud.firebaseapp.com",
@@ -197,16 +205,10 @@
       measurementId: "G-MZHCG905XL"
     };
 
-    // 🏆 原汁原味 6 大觀測樣本 (完全還原)
     const cases = [
       {
         title: "觀測樣本 01：抓弊無效 (打破舊有迷思)",
         desc: "一位認定的國際學生提交了出色的期末報告。但老師用「AI 偵測軟體」一掃，顯示「80% 為 AI 生成」。學生崩潰哭訴自己只用了 Grammarly 檢查文法，絕對沒用 ChatGPT 代寫。",
-        quotes: [
-          ["學生終端", "我真的只有檢查文法，為什麼軟體說我作弊？這不公平！"],
-          ["教師日誌", "偵測軟體都顯示 80% 了，身為老師我能不相信系統嗎？"],
-          ["CAIAF 提示", "請考量關於 AI 偵測軟體的技術限制與偽陽性問題。"]
-        ],
         options: [
           { id: "optA", label: "A", text: "相信偵測軟體，直接給零分 (傳統防堵派)" },
           { id: "optB", label: "B", text: "退回報告，要求課堂上手寫重作 (勞民傷財)" },
@@ -227,11 +229,6 @@
       {
         title: "觀測樣本 02：外包的腦袋 (學習本質的流失)",
         desc: "學生利用 AI 寫出了一份結構完美的報告。但當老師在課堂上請他「用自己的話總結報告觀點」時，學生卻支支吾吾，完全說不出所以然。",
-        quotes: [
-          ["學生終端", "報告裡的字我都看得懂，只是突然叫我講，我講不出來嘛..."],
-          ["教師日誌", "他沒有『抄襲』別人的文章，但這份報告裡的知識，真的屬於他嗎？"],
-          ["CAIAF 提示", "當學生的「產出成果」與「真實認知」嚴重脫節時，我們評量到了什麼？"]
-        ],
         options: [
           { id: "optA", label: "A", text: "只要報告結構完美、符合規定就給高分" },
           { id: "optB", label: "B", text: "直接視為作弊，因為他沒有真正理解內容" },
@@ -251,11 +248,6 @@
       {
         title: "觀測樣本 03：隱私危機 (提醒教師自身的道德盲點)",
         desc: "某高中老師為了節省期末處理文書的時間，將全班 40 位學生的「真實姓名、歷年成績與輔導紀錄」全部貼到免費版的 ChatGPT，請 AI 快速生成每個學生的期末評語。",
-        quotes: [
-          ["教師日誌", "這樣寫評語超快！而且語氣溫和，每一篇看起來都很專業。"],
-          ["家長回饋", "等等...我小孩的敏感輔導紀錄被傳給外面的 AI 科技公司了嗎？"],
-          ["CAIAF 提示", "AI 評量框架不僅僅約束學生作弊，同時也約束教育者的行為。"]
-        ],
         options: [
           { id: "optA", label: "A", text: "嚴重違反「透明性 (Transparency)」" },
           { id: "optB", label: "B", text: "嚴重違反「責任歸屬 (Accountability)」" },
@@ -275,11 +267,6 @@
       {
         title: "觀測樣本 04：未來邊界 (展示框架 Level 6 的未來擴展性)",
         desc: "學生戴著智慧眼鏡寫程式作業，AI 系統透過視覺與語音不斷即時提示：「你這裡少了一個分號」、「這個演算法效能太差，試試看這個寫法」。學生隨時與 AI 對話並完成作業。",
-        quotes: [
-          ["學生終端", "這系統就像我的私人專屬助教，24 小時隨時陪我 debug！"],
-          ["教師日誌", "這到底算是他寫的，還是 AI 寫的？這已經超越單純的『輔助』了。"],
-          ["CAIAF 提示", "科技正朝向即時、個人化的互動發展，這超出了最初的 5 級量表。"]
-        ],
         options: [
           { id: "optA", label: "A", text: "Level 4 (人機協作完成特定任務)" },
           { id: "optB", label: "B", text: "Level 5 (全面融合輔助)" },
@@ -299,11 +286,6 @@
       {
         title: "觀測樣本 05：裝備戰場 (探討「付費 vs 免費」的教育公平性)",
         desc: "老師出了一份複雜的數據分析報告，宣佈「全面開放使用 AI」。學生 A 使用免費版 AI，得到錯誤架構拿到 C；學生 B 每月花 20 美金訂閱最高級付費版 AI，輕鬆畫出精美圖表拿到 A+。",
-        quotes: [
-          ["學生 A", "免費版一直斷線還亂回答，我根本沒辦法像他那樣做圖。"],
-          ["教師日誌", "學生 B 的報告無可挑剔，但這真的是他『本人』的實力嗎？"],
-          ["CAIAF 提示", "當成績與『購買高級 AI 的財力』掛鉤時，我們評量的是什麼？"]
-        ],
         options: [
           { id: "optA", label: "A", text: "破壞了學生的「責任歸屬」" },
           { id: "optB", label: "B", text: "剝奪了低收入學生的「公平與包容」" },
@@ -323,11 +305,6 @@
       {
         title: "觀測樣本 06：誰是作者 (Level 3 的具體實作規範)",
         desc: "學生熬夜寫出觀點極佳但文法普通的草稿，請 AI「幫忙潤飾文法」。結果 AI 不只修文法，還替換了大量高級詞彙，讀起來像資深學者。學生直接交出最終版，心想：「反正點子都是我的，不用特別標註吧？」",
-        quotes: [
-          ["學生終端", "這篇文章的靈魂是我的！AI 只是幫我化了個妝而已。"],
-          ["教師日誌", "這用詞太深奧了，我該怎麼知道原本的草稿長怎樣？"],
-          ["CAIAF 提示", "參考 CAIAF 框架中對於 Level 3 (AI-Assisted Editing) 的具體規範。"]
-        ],
         options: [
           { id: "optA", label: "A", text: "學生應將 AI 視為「共同作者」掛名" },
           { id: "optB", label: "B", text: "學生應在附錄提供「無 AI 參與的原始草稿」" },
@@ -386,16 +363,11 @@
       }
     };
 
-    // Host Logic
     function updateHostUI() {
       const c = cases[currentCaseIndex];
       document.getElementById('hostCaseMeta').innerText = `SAMPLE_${String(currentCaseIndex + 1).padStart(2, '0')} // ${cases.length}`;
       document.getElementById('hostTitle').innerText = c.title;
       document.getElementById('hostDesc').innerText = c.desc;
-      
-      document.getElementById('hostQuotes').innerHTML = c.quotes.map(q => `
-        <div class="quote"><b>[${q[0]}]</b> ${q[1]}</div>
-      `).join('');
 
       document.getElementById('hostStatsArea').innerHTML = c.options.map(opt => `
         <div style="margin-bottom:28px;">
@@ -439,7 +411,20 @@
 
     window.closeVerdict = () => { document.getElementById('verdictOverlay').style.display = 'none'; };
 
-    // Voter Logic
+    window.clearVotes = async () => {
+      try {
+        const votesRef = collection(db, 'votes', appId, currentCaseIndex.toString());
+        const snapshot = await getDocs(votesRef);
+        const deletePromises = [];
+        snapshot.forEach((docSnap) => {
+          deletePromises.push(deleteDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), docSnap.id)));
+        });
+        await Promise.all(deletePromises);
+      } catch (e) {
+        console.error("Clear votes failed:", e);
+      }
+    };
+
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
         if(ds.exists()){

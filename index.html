@@ -25,6 +25,7 @@
       margin: 0; font-family: "Noto Sans TC", sans-serif;
       color: var(--text); background: var(--bg-dark);
       min-height: 100vh; display: flex; flex-direction: column;
+      overflow-x: hidden;
     }
     body::before {
       content: ""; position: fixed; inset: 0;
@@ -47,16 +48,27 @@
       background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 119, 255, 0.4));
       border: 1px solid var(--cyan); color: var(--cyan); padding: 16px 24px; font-size: 18px;
     }
-    .btn-primary:hover { box-shadow: var(--glow-A); text-shadow: 0 0 8px var(--cyan); }
+    .btn-primary:hover:not(:disabled) { box-shadow: var(--glow-A); text-shadow: 0 0 8px var(--cyan); }
 
-    /* Role Selection */
-    #roleScreen { align-items: center; justify-content: center; text-align: center; }
+    /* 首頁頂部樣式 */
+    .system-header {
+      padding: 30px; text-align: left; width: 100%; position: relative; z-index: 10;
+    }
+    .system-header h1 {
+      margin: 0; color: var(--cyan); font-size: 28px; letter-spacing: 2px; font-weight: 900;
+    }
+    .system-header .status-line {
+      color: var(--sub); font-family: monospace; font-size: 13px; margin-top: 5px; letter-spacing: 1px;
+    }
+
+    /* 首頁按鈕區域 */
+    #roleScreen { align-items: center; justify-content: flex-start; }
     .role-btn {
       width: 100%; max-width: 400px; padding: 24px; margin-bottom: 16px; font-size: 20px;
       background: rgba(13, 22, 43, 0.8); border: 1px solid rgba(0, 240, 255, 0.3); color: #fff;
     }
 
-    /* Voter UI */
+    /* 顧問端 UI */
     #voterScreen { padding: 16px; max-width: 600px; margin: 0 auto; }
     .mobile-vote-btn {
       width: 100%; padding: 20px; margin-bottom: 14px; text-align: left;
@@ -64,16 +76,17 @@
     }
     .mobile-vote-btn.selected { border-color: var(--cyan); box-shadow: var(--glow-A); }
 
-    /* Host UI */
+    /* 主控台 UI */
     #hostScreen { padding: 24px; display: flex; flex-direction: column; }
     .stat-bar-bg { width: 100%; height: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-top: 8px; }
     .stat-bar-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.5s ease; }
     .fill-optA { background: var(--optA); } .fill-optB { background: var(--optB); } .fill-optC { background: var(--optC); }
 
+    /* 隔離 CSS：確保分析按鈕只在主控台出現 */
     .host-controls { display: none; }
     #hostScreen.active .host-controls { display: flex; align-items: center; }
 
-    /* 🌟 詳細版 CAIAF 分級圖表樣式 🌟 */
+    /* 詳細版 CAIAF 分級圖表樣式 */
     .caiaf-detailed-table {
       margin-top: 30px; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
       background: rgba(0,0,0,0.3); text-align: left;
@@ -87,7 +100,6 @@
       border-bottom: 1px solid rgba(0, 240, 255, 0.1); transition: background 0.3s;
     }
     .table-row:last-child { border-bottom: none; }
-    .table-row:hover { background: rgba(0, 240, 255, 0.03); }
     .lv-badge {
       width: 55px; height: 24px; background: var(--cyan); color: var(--bg-dark);
       font-size: 12px; font-weight: 900; border-radius: 4px; display: grid; place-items: center;
@@ -95,7 +107,7 @@
     .lv-content b { color: var(--cyan); font-size: 15px; display: block; margin-bottom: 4px; }
     .lv-content p { margin: 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
 
-    /* Overlay */
+    /* 分析層與動畫 */
     .analyzing-overlay {
       position: fixed; inset: 0; background: rgba(7, 11, 20, 0.95);
       display: none; align-items: center; justify-content: center; z-index: 100;
@@ -117,12 +129,15 @@
 </head>
 <body>
 
-  <!-- 1. 首頁 -->
+  <!-- 1. 首頁：標題置頂，內容僅保留身分按鈕 -->
   <div id="roleScreen" class="screen active">
-    <div class="glass-panel" style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
-      <div id="connBadge" class="btn-primary" style="font-size: 12px; padding: 4px 12px; margin-bottom: 20px; display: inline-block; border-radius: 20px;">Firebase 狀態載入中...</div>
-      <h1>CAIAF 光譜實驗室</h1>
-      <p style="color: var(--sub); margin-bottom: 30px; line-height: 1.6;">請選擇您的終端設備，開啟對應的介面模式。</p>
+    <div class="system-header">
+      <h1 onclick="location.reload()" style="cursor:pointer;">CAIAF 光譜實驗室</h1>
+      <div id="connBadge" class="status-line">SYSTEM STATUS: CONNECTING...</div>
+    </div>
+    
+    <div class="glass-panel" style="max-width: 500px; width: 90%; margin-top: 5vh;">
+      <p style="color: var(--sub); margin-bottom: 30px; line-height: 1.6; font-size: 17px;">請選擇您的終端設備，開啟對應的介面模式。</p>
       <button class="role-btn" onclick="initApp('host')">💻 啟動全息主控台</button>
       <button class="role-btn" onclick="initApp('voter')">📱 連線現場顧問群</button>
     </div>
@@ -152,17 +167,16 @@
         <ul id="voterTeacher" style="color: var(--sub); line-height: 1.6; padding-left: 20px;"></ul>
       </div>
 
-      <!-- 🌟 觀眾端終極詳細圖表 -->
       <div id="finalChartAudience" style="display:none;">
         <h3 style="color: var(--cyan); margin-top: 40px; letter-spacing: 2px;">🎓 CAIAF AI 評量分級詳細框架</h3>
         <div class="caiaf-detailed-table">
             <div class="table-header"><div>層級</div><div>定義與使用規範</div></div>
             <div class="table-row"><div class="lv-badge">LV 1</div><div class="lv-content"><b>禁止使用 (No AI)</b><p>評量嚴禁任何 AI 參與。完全依賴學生的傳統研究能力與個人思考產出。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪、關鍵字建議。最終內容仍由人類撰寫，僅參考 AI 的靈感。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫原始草稿，AI 用於修正文法、措辭與風格調整。需在附錄提供無 AI 潤飾的初稿。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成評量中的特定子任務（如產出程式碼片段、數據圖表），再由人類審核與整合。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程與 AI 深度協作。評量重點轉向學生如何引導、批判、驗證並精煉 AI 產出的最終成果。</p></div></div>
-            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>預留位。針對即時互動 AI、虛擬實境或自主智能代理等未來技術所設計的動態評量層級。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪。最終內容仍由人類撰寫。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫初稿，AI 用於修正文法。需在附錄提供無 AI 潤飾的初稿。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成特定子任務，再由人類審核整合。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程與 AI 深度協作。重點在於學生如何引導、批判 AI 成果。</p></div></div>
+            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>針對即時互動、虛擬實境等未來動態評量層級。</p></div></div>
         </div>
       </div>
     </div>
@@ -176,9 +190,9 @@
         <span id="hostStatusBadge" style="font-size:14px; background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; margin-left:10px; border:1px dashed var(--cyan); color:#fff;">同步中</span>
       </h2>
       <div class="host-controls">
-        <button id="clearBtn" style="background:rgba(255,50,50,0.15); color:#ff6b6b; padding:10px 16px; margin-right:15px; border: 1px solid rgba(255,50,50,0.4); border-radius: 8px; cursor: pointer;" onclick="clearVotes()">[重置現場顧問群決策分布]</button>
-        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px; border: none; border-radius: 8px; cursor: pointer;" onclick="prevCase()">[< 上一題]</button>
-        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; border: none; border-radius: 8px; cursor: pointer;" onclick="nextCase()">[下一題 >]</button>
+        <button id="clearBtn" style="background:rgba(255,50,50,0.15); color:#ff6b6b; padding:10px 16px; margin-right:15px; border: 1px solid rgba(255,50,50,0.4); border-radius: 8px;" onclick="clearVotes()">[重置現場顧問群決策分布]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px; margin-right:10px;" onclick="prevCase()">[< 上一題]</button>
+        <button style="background:rgba(255,255,255,0.1); color:#fff; padding:10px 16px;" onclick="nextCase()">[下一題 >]</button>
       </div>
     </div>
     <div style="display: flex; justify-content: center; width: 100%;">
@@ -210,28 +224,26 @@
         </div>
       </div>
       
-      <!-- 第六題揭開詳細表格按鈕 -->
       <div id="finalSummaryTrigger" style="display:none; margin-bottom: 20px;">
         <button class="btn-primary" style="width: 100%; background: linear-gradient(135deg, #0077ff, #A855F7); border: none;" onclick="revealFullSpectrum()">🏆 揭曉：CAIAF AI 評量分級光譜圖</button>
       </div>
 
-      <!-- 主控台詳細表格 -->
       <div id="finalChartHost" style="display:none; margin-bottom: 30px;">
         <div class="caiaf-detailed-table" style="max-width: 650px; margin: 0 auto; background: rgba(255,255,255,0.03);">
             <div class="table-header"><div>層級</div><div>定義與使用規範</div></div>
-            <div class="table-row"><div class="lv-badge">LV 1</div><div class="lv-content"><b>禁止使用 (No AI)</b><p>評量嚴禁任何 AI 參與。完全依賴學生的個人思考產出。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪、關鍵字建議。最終內容仍由人類撰寫。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫原始草稿，AI 協助修改文法。需提供原始初稿。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成特定子任務，再由人類審核與整合。</p></div></div>
-            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程與 AI 協作。評量重點轉向批判性監督與驗證能力。</p></div></div>
-            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>預留位。針對即時互動與自主智能代理等未來技術。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 1</div><div class="lv-content"><b>禁止使用 (No AI)</b><p>評量嚴禁任何 AI 參與。完全依賴學生的個人產出。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 2</div><div class="lv-content"><b>協助發想 (Idea Generation)</b><p>AI 用於腦力激盪。最終由人類撰寫。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 3</div><div class="lv-content"><b>輔助潤飾 (AI-Assisted Editing)</b><p>人類撰寫初稿，AI 協助修改文法。需提供原始對照。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 4</div><div class="lv-content"><b>特定任務 (Task-Specific)</b><p>AI 負責完成特定子任務，再由人類審核整合。</p></div></div>
+            <div class="table-row"><div class="lv-badge">LV 5</div><div class="lv-content"><b>全面融合 (Full Integration)</b><p>全程深度協作。重點在於學生如何引導與驗證 AI。</p></div></div>
+            <div class="table-row"><div class="lv-badge" style="background:#A855F7;">LV 6</div><div class="lv-content"><b>未來擴展 (Placeholders)</b><p>針對即時互動等未來新技術預留層級。</p></div></div>
         </div>
       </div>
       <button class="btn-primary" style="padding: 16px 40px;" onclick="closeVerdict()">關閉分析視窗</button>
     </div>
   </div>
 
-  <footer class="app-footer">Designed by 日安匕禾 Bever Tech System | Version: v3.2.5</footer>
+  <footer class="app-footer">Designed by 日安匕禾 Bever Tech System | Version: v3.3.3</footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -249,84 +261,12 @@
     };
 
     const cases = [
-      {
-        title: "觀測樣本 01：抓弊無效 (打破舊有迷思)",
-        desc: "一位認定的國際學生提交了出色的期末報告。但老師用「AI 偵測軟體」一掃，顯示「80% 為 AI 生成」。學生崩潰哭訴自己只用了 Grammarly 檢查文法，絕對沒用 ChatGPT 代寫。",
-        options: [
-          { id: "optA", label: "A", text: "相信偵測軟體，直接給零分 (傳統防堵派)" },
-          { id: "optB", label: "B", text: "退回報告，要求課堂上手寫重作 (勞民傷財)" },
-          { id: "optC", label: "C", text: "放棄依賴軟體，請學生口頭答辯 (CAIAF 導向)" }
-        ],
-        verdict: "應放棄過度依賴 AI 偵測軟體",
-        level: "核心概念：評量設計的典範轉移",
-        risks: ["偵測軟體存在高度偽陽性","對非母語人士存在系統性偏見","規避偵測已成軍備競賽"],
-        teacher: ["評量應從最終產出轉向過程導向","建立基於互信的 AI 溝通協議"]
-      },
-      {
-        title: "觀測樣本 02：外包的腦袋 (學習本質的流失)",
-        desc: "學生利用 AI 寫出了一份結構完美的報告。但當老師在課堂上請他「用自己的話總結報告觀點」時，學生卻支支吾吾，完全說不出所以然。",
-        options: [
-          { id: "optA", label: "A", text: "只要報告結構完美、符合規定就給高分" },
-          { id: "optB", label: "B", text: "直接視為作弊，因為他沒有真正理解內容" },
-          { id: "optC", label: "C", text: "調整評量，將「思路反思與答辯」納入計分" }
-        ],
-        verdict: "評量應回歸「教學對準 (Pedagogical Alignment)」",
-        level: "核心概念：防範認知外包 (Cognitive Offloading)",
-        risks: ["學生失去了深度思考與內化的機會","最終產出無法反映真實學習狀況"],
-        teacher: ["評量應從單一產出轉向學習過程","增加形成性評量與口頭答辯"]
-      },
-      {
-        title: "觀測樣本 03：隱私危機 (提醒教師自身的道德盲點)",
-        desc: "某高中老師為了節省期末處理文書的時間，將全班 40 位學生的「真實姓名、歷年成績與輔導紀錄」全部貼到免費版的 ChatGPT，請 AI 快速生成每個學生的期末評語。",
-        options: [
-          { id: "optA", label: "A", text: "嚴重違反「透明性 (Transparency)」" },
-          { id: "optB", label: "B", text: "嚴重違反「責任歸屬 (Accountability)」" },
-          { id: "optC", label: "C", text: "嚴重違反「隱私與資料保護 (Privacy)」" }
-        ],
-        verdict: "嚴重違反「隱私與資料保護」",
-        level: "核心概念：教育者的 AI 倫理底線",
-        risks: ["學生個資外洩成為模型訓練數據","違反 GDPR 與相關教育個資保護法規"],
-        teacher: ["使用 AI 前必須進行數據去識別化","嚴禁將敏感紀錄上傳至公共 AI 平台"]
-      },
-      {
-        title: "觀測樣本 04：未來邊界 (展示框架 Level 6 的未來擴展性)",
-        desc: "學生戴著智慧眼鏡寫程式作業，AI 系統透過視覺與語音不斷即時提示：「你這裡少了一個分號」、「這個演算法效能太差，試試看這個寫法」。學生隨時與 AI 對話並完成作業。",
-        options: [
-          { id: "optA", label: "A", text: "Level 4 (人機協作完成特定任務)" },
-          { id: "optB", label: "B", text: "Level 5 (全面融合輔助)" },
-          { id: "optC", label: "C", text: "Level 6 (全新層級：即時互動與個人助理)" }
-        ],
-        verdict: "Level 6 (Advanced AI Integration)",
-        level: "核心概念：框架的未來擴展性 (Placeholders)",
-        risks: ["傳統評分模型已徹底失效","人機界線將變得完全模糊"],
-        teacher: ["評量重點應放在學生的批判性判斷力","框架必須具備像光譜一樣的彈性"]
-      },
-      {
-        title: "觀測樣本 05：裝備戰場 (探討「付費 vs 免費」的教育公平性)",
-        desc: "老師出了一份複雜的數據分析報告，宣佈「全面開放使用 AI」。學生 A 使用免費版 AI，得到錯誤架構拿到 C；學生 B 每月花 20 美金訂閱最高級付費版 AI，輕鬆畫出精美圖表拿到 A+。",
-        options: [
-          { id: "optA", label: "A", text: "破壞了學生的「責任歸屬」" },
-          { id: "optB", label: "B", text: "剝奪了低收入學生的「公平與包容」" },
-          { id: "optC", label: "C", text: "偏離了「教學對準」" }
-        ],
-        verdict: "嚴重違反「公平與包容 (Equity)」",
-        level: "核心概念：資源落差造成的評量失效",
-        risks: ["評量結果反映的是家庭財力而非實力","加劇了數位落差造成的社會不平等"],
-        teacher: ["若要開放 AI，必須確保所有學生有同等存取權","由校方提供統一的 AI 工具授權"]
-      },
-      {
-        title: "觀測樣本 06：誰是作者 (Level 3 的具體實作規範)",
-        desc: "學生熬夜寫出觀點極佳但文法普通的草稿，請 AI「幫忙潤飾文法」。結果 AI 不只修文法，還替換了大量高級詞彙，讀起來像資深學者。學生直接交出最終版，心想：「反正點子都是我的，不用特別標註吧？」",
-        options: [
-          { id: "optA", label: "A", text: "學生應將 AI 視為「共同作者」掛名" },
-          { id: "optB", label: "B", text: "學生應在附錄提供「無 AI 參與的原始草稿」" },
-          { id: "optC", label: "C", text: "學生應將 AI 潤飾的句子全部用引號框起" }
-        ],
-        verdict: "應在附錄提供原始草稿 (Level 3 規範)",
-        level: "核心概念：Level 3 具體實作與透明性",
-        risks: ["透明性不足導致教師無法評估進步幅度","過度潤飾模糊了人類原創的界線"],
-        teacher: ["落實 Level 3 的透明申報流程","具體規範潤飾的限制與揭露義務"]
-      }
+      { title: "觀測樣本 01：抓弊無效 (打破舊有迷思)", desc: "一位認定的國際學生提交了出色的期末報告。但老師用「AI 偵測軟體」一掃，顯示「80% 為 AI 生成」。學生崩潰哭訴自己只用了 Grammarly 檢查文法，絕對沒用 ChatGPT 代寫。", options: [{ id: "optA", label: "A", text: "相信偵測軟體，直接給零分" }, { id: "optB", label: "B", text: "退回報告，要求課堂上手寫重作" }, { id: "optC", label: "C", text: "放棄依賴軟體，請學生口頭答辯" }], verdict: "應放棄過度依賴 AI 偵測軟體", level: "核心概念：評量設計的典範轉移", risks: ["偵測軟體存在高度偽陽性","對非母語人士存在系統性偏見"], teacher: ["評量應從最終產出轉向過程導向","建立基於互信的 AI 溝通協議"] },
+      { title: "觀測樣本 02：外包的腦袋 (學習本質的流失)", desc: "學生利用 AI 寫出了一份結構完美的報告。但當老師在課堂上請他「用自己的話總結報告觀點」時，學生卻支支吾吾，完全說不出所以然。", options: [{ id: "optA", label: "A", text: "只要報告結構完美、符合規定就給高分" }, { id: "optB", label: "B", text: "直接視為作弊，因為他沒有真正理解內容" }, { id: "optC", label: "C", text: "調整評量，將「思路反思與答辯」納入計分" }], verdict: "評量應回歸「教學對準 (Pedagogical Alignment)」", level: "核心概念：防範認知外包 (Cognitive Offloading)", risks: ["學生失去了深度思考與內化的機會"], teacher: ["評量應從單一產出轉向學習過程","增加形成性評量與口頭答辯"] },
+      { title: "觀測樣本 03：隱私危機 (提醒教師自身的道德盲點)", desc: "某高中老師為了節省期末處理文書的時間，將全班 40 位學生的「真實姓名、歷年成績與輔導紀錄」全部貼到免費版的 ChatGPT，請 AI 快速生成每個學生的期末評語。", options: [{ id: "optA", label: "A", text: "嚴重違反「透明性 (Transparency)」" }, { id: "optB", label: "B", text: "嚴重違反「責任歸屬 (Accountability)」" }, { id: "optC", label: "C", text: "嚴重違反「隱私與資料保護 (Privacy)」" }], verdict: "嚴重違反「隱私與資料保護」", level: "核心概念：教育者的 AI 倫理底線", risks: ["學生個資外洩成為模型訓練數據"], teacher: ["使用 AI 前必須進行數據去識別化","嚴禁將敏感紀錄上傳至公共 AI 平台"] },
+      { title: "觀測樣本 04：未來邊界 (展示框架 Level 6 的未來擴展性)", desc: "學生戴著智慧眼鏡寫程式作業，AI 系統透過視覺與語音不斷即時提示：「你這裡少了一個分號」、「這個演算法效能太差，試試看這個寫法」。學生隨時與 AI 對話並完成作業。", options: [{ id: "optA", label: "A", text: "Level 4 (人機協作完成特定任務)" }, { id: "optB", label: "B", text: "Level 5 (全面融合輔助)" }, { id: "optC", label: "C", text: "Level 6 (全新層級：即時互動與個人助理)" }], verdict: "Level 6 (Advanced AI Integration)", level: "核心概念：框架的未來擴展性 (Placeholders)", risks: ["人機界線將變得完全模糊"], teacher: ["評量重點應放在學生的批判性判斷力","框架必須具備像光譜一樣的彈性"] },
+      { title: "觀測樣本 05：裝備戰場 (探討「付費 vs 免費」的教育公平性)", desc: "老師出了一份複雜的數據分析報告，宣佈「全面開放使用 AI」。學生 A 使用免費版 AI，得到錯誤架構拿到 C；學生 B 每月花 20 美金訂閱最高級付費版 AI，輕鬆畫出精美圖表拿到 A+。", options: [{ id: "optA", label: "A", text: "破壞了學生的「責任歸屬」" }, { id: "optB", label: "B", text: "剝奪了低收入學生的「公平與包容」" }, { id: "optC", label: "C", text: "偏離了「教學對準」" }], verdict: "嚴重違反「公平與包容 (Equity)」", level: "核心概念：資源落差造成的評量失效", risks: ["評量結果反映的是家庭財力而非實力"], teacher: ["若要開放 AI，必須確保所有學生有同等存取權","由校方提供統一的 AI 工具授權"] },
+      { title: "觀測樣本 06：誰是作者 (Level 3 的具體實作規範)", desc: "學生熬夜寫出觀點極佳但文法普通的草稿，請 AI「幫忙潤飾文法」。結果 AI 不只修文法，還替換了大量高級詞彙，讀起來像資深學者。學生直接交出最終版，心想：「反正點子都是我的，不用特別標註吧？」", options: [{ id: "optA", label: "A", text: "學生應將 AI 視為「共同作者」掛名" }, { id: "optB", label: "B", text: "學生應在附錄提供「無 AI 參與的原始草稿」" }, { id: "optC", label: "C", text: "學生應將 AI 潤飾的句子全部用引號框起" }], verdict: "應在附錄提供原始草稿 (Level 3 規範)", level: "核心概念：Level 3 具體實作與透明性", risks: ["過度潤飾模糊了人類原創的界線"], teacher: ["落實 Level 3 的透明申報流程","具體規範潤飾的限制與揭露義務"] }
     ];
 
     let currentRole = null, currentCaseIndex = 0, userId = null, votesUnsubscribe = null;
@@ -335,7 +275,7 @@
 
     signInAnonymously(auth);
     onAuthStateChanged(auth, (user) => {
-      if (user) { userId = user.uid; document.getElementById('connBadge').innerText = "SYS.ONLINE // 雲端同步中"; if(currentRole === 'voter') listenState(); }
+      if (user) { userId = user.uid; const b = document.getElementById('connBadge'); if(b) b.innerText = "SYSTEM STATUS: ONLINE // 雲端同步中"; if(currentRole === 'voter') listenState(); }
     });
 
     window.initApp = (role) => {
@@ -345,26 +285,25 @@
     };
 
     function updateHostUI() {
+      if(currentRole !== 'host') return;
       const c = cases[currentCaseIndex];
-      document.getElementById('hostCaseMeta').innerText = `SAMPLE_${String(currentCaseIndex + 1).padStart(2, '0')} // ${cases.length}`;
-      document.getElementById('hostTitle').innerText = c.title; document.getElementById('hostDesc').innerText = c.desc;
-      document.getElementById('analyzeBtn').innerText = (currentCaseIndex === 5) ? "⚡ 啟動終極框架分析與總結" : "⚡ 啟動 CAIAF 框架分析";
-      document.getElementById('hostStatsArea').innerHTML = c.options.map(opt => `
-        <div style="margin-bottom:28px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size: 18px; font-weight: 600;">[${opt.label}] ${opt.text}</span><span id="count-${opt.id}" style="font-family: monospace; font-size: 20px; font-weight: bold;">0 票</span></div>
-          <div class="stat-bar-bg"><div id="bar-${opt.id}" class="stat-bar-fill fill-${opt.id}"></div></div>
-        </div>
-      `).join('');
+      const m = document.getElementById('hostCaseMeta'), t = document.getElementById('hostTitle'), d = document.getElementById('hostDesc'), b = document.getElementById('analyzeBtn');
+      if(m) m.innerText = `SAMPLE_${String(currentCaseIndex + 1).padStart(2, '0')} // ${cases.length}`;
+      if(t) t.innerText = c.title; if(d) d.innerText = c.desc;
+      if(b) b.innerText = (currentCaseIndex === 5) ? "⚡ 啟動終極框架分析與總結" : "⚡ 啟動 CAIAF 框架分析";
+      const s = document.getElementById('hostStatsArea');
+      if(s) s.innerHTML = c.options.map(o => `<div style="margin-bottom:28px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:18px; font-weight:600;">[${o.label}] ${o.text}</span><span id="count-${o.id}" style="font-family:monospace; font-size:20px; font-weight:bold;">0 票</span></div><div class="stat-bar-bg"><div id="bar-${o.id}" class="stat-bar-fill fill-${o.id}"></div></div></div>`).join('');
     }
 
     function listenVotes() {
       if (votesUnsubscribe) votesUnsubscribe(); 
-      votesUnsubscribe = onSnapshot(collection(db, 'votes', appId, currentCaseIndex.toString()), (snap) => {
-        let counts = { optA:0, optB:0, optC:0 }; snap.forEach(d => counts[d.data().vote]++);
-        const total = snap.size || 1;
+      votesUnsubscribe = onSnapshot(collection(db, 'votes', appId, currentCaseIndex.toString()), (sn) => {
+        if(currentRole !== 'host') return;
+        let cts = { optA:0, optB:0, optC:0 }; sn.forEach(doc => cts[doc.data().vote]++);
+        const tot = sn.size || 1;
         ['optA','optB','optC'].forEach(id => {
-          const bar = document.getElementById(`bar-${id}`), countLabel = document.getElementById(`count-${id}`);
-          if(bar && countLabel) { countLabel.innerText = `${counts[id]} 票`; bar.style.width = `${(counts[id]/total)*100}%`; }
+          const bar = document.getElementById(`bar-${id}`), lbl = document.getElementById(`count-${id}`);
+          if(bar && lbl) { lbl.innerText = `${cts[id]} 票`; bar.style.width = `${(cts[id]/tot)*100}%`; }
         });
       });
     }
@@ -395,31 +334,31 @@
     window.closeVerdict = () => { document.getElementById('verdictOverlay').style.display = 'none'; };
 
     window.clearVotes = async () => {
-      const votesRef = collection(db, 'votes', appId, currentCaseIndex.toString()), snapshot = await getDocs(votesRef);
-      const delPromises = []; snapshot.forEach((docSnap) => delPromises.push(deleteDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), docSnap.id))));
-      await Promise.all(delPromises); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
+      const vRef = collection(db, 'votes', appId, currentCaseIndex.toString()), sn = await getDocs(vRef);
+      const ps = []; sn.forEach(d => ps.push(deleteDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), d.id))));
+      await Promise.all(ps); setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'voting' });
     };
 
     document.addEventListener('keydown', (e) => {
       if (currentRole === 'host') {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown') nextCase();
-        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevCase();
-        else if (e.key === 'c' || e.key === 'C') clearVotes();
-        else if (e.key === 's' || e.key === 'S') setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
+        if (e.key === 'ArrowRight') nextCase(); else if (e.key === 'ArrowLeft') prevCase();
+        else if (e.key === 'c' || e.key === 'C') clearVotes(); else if (e.key === 's' || e.key === 'S') setDoc(doc(db, 'state', appId), { index: currentCaseIndex, status: 'standby' });
         else if (e.key === 'Enter') { if (document.getElementById('verdictOverlay').style.display === 'flex') closeVerdict(); else announceVerdict(); }
       }
     });
 
     function listenState() {
       onSnapshot(doc(db, 'state', appId), (ds) => {
-        if(ds.exists()){
+        if(ds.exists() && currentRole === 'voter'){ 
           const data = ds.data(); currentCaseIndex = data.index || 0;
           if(data.status === 'voting') loadVoterCase();
           else if(data.status === 'verdict') showVoterVerdict(false);
           else if(data.status === 'final_show') showVoterVerdict(true);
           else {
-            document.getElementById('voterTitle').innerText = "⏳ 講者準備中..."; document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
-            document.getElementById('voterOptions').innerHTML = ""; document.getElementById('voterCaseContent').style.display = 'block'; document.getElementById('voterVerdictArea').style.display = 'none';
+            document.getElementById('voterTitle').innerText = "⏳ 講者準備中..."; 
+            document.getElementById('voterDesc').innerText = "系統已建立安全連線，請等待實驗啟動。";
+            document.getElementById('voterOptions').innerHTML = ""; 
+            document.getElementById('voterCaseContent').style.display = 'block'; document.getElementById('voterVerdictArea').style.display = 'none';
           }
         }
       });
@@ -428,19 +367,19 @@
     function loadVoterCase() {
       const c = cases[currentCaseIndex];
       document.getElementById('voterTitle').innerText = c.title; document.getElementById('voterDesc').innerText = c.desc;
-      document.getElementById('voterOptions').innerHTML = c.options.map(opt => `<button class="mobile-vote-btn" onclick="submitVote('${opt.id}', this)"><span style="font-family: monospace; font-weight: 900; margin-right: 10px;">[${opt.label}]</span>${opt.text}</button>`).join('');
+      document.getElementById('voterOptions').innerHTML = c.options.map(o => `<button class="mobile-vote-btn" onclick="submitVote('${o.id}')"><span style="font-family:monospace; font-weight:900; margin-right:10px;">[${o.label}]</span>${o.text}</button>`).join('');
       document.getElementById('voterCaseContent').style.display = 'block'; document.getElementById('voterVerdictArea').style.display = 'none'; document.getElementById('waitMessage').style.display = 'none';
     }
 
-    window.submitVote = (type, btn) => { setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type }); document.getElementById('voterOptions').innerHTML = ""; document.getElementById('waitMessage').style.display = 'block'; };
+    window.submitVote = (type) => { setDoc(doc(db, 'votes', appId, currentCaseIndex.toString(), userId), { vote: type }); document.getElementById('voterOptions').innerHTML = ""; document.getElementById('waitMessage').style.display = 'block'; };
 
-    function showVoterVerdict(showFinal) {
+    function showVoterVerdict(final) {
       const c = cases[currentCaseIndex];
       document.getElementById('voterVerdictResult').innerText = c.verdict; document.getElementById('voterVerdictLevel').innerText = c.level;
       document.getElementById('voterRisks').innerHTML = c.risks.map(r => `<li>${r}</li>`).join('');
       document.getElementById('voterTeacher').innerHTML = c.teacher.map(t => `<li>${t}</li>`).join('');
       document.getElementById('voterCaseContent').style.display = 'none'; document.getElementById('voterVerdictArea').style.display = 'block';
-      document.getElementById('finalChartAudience').style.display = (showFinal && currentCaseIndex === 5) ? 'block' : 'none';
+      document.getElementById('finalChartAudience').style.display = (final && currentCaseIndex === 5) ? 'block' : 'none';
     }
   </script>
 </body>
